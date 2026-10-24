@@ -13,7 +13,7 @@ concurrency:
 jobs:
   compare:
     runs-on: ubuntu-24.04
-    timeout-minutes: 360
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
         with:
@@ -30,7 +30,7 @@ jobs:
       - name: Run pinned pyperf comparison
         env:
           MPLBACKEND: Agg
-        run: ./setup.sh --source pinned --mode pyperf
+        run: ./setup.sh --source pinned --mode pyperf --profile ci
 
       - name: Summarize results
         id: report

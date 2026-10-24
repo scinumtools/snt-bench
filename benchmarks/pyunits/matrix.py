@@ -202,7 +202,9 @@ def cases():
 
 all_cases = list(cases())
 if args.list_cases:
-    print("\n".join(case.id for case in all_cases))
+    listed = [case for case in all_cases if not args.case or
+              any(fnmatchcase(case.id, pattern) for pattern in args.case)]
+    print("\n".join(case.id for case in listed))
     raise SystemExit(0)
 selected_cases = [case for case in all_cases if not args.case or
                   any(fnmatchcase(case.id, pattern) for pattern in args.case)]

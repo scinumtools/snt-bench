@@ -32,6 +32,9 @@ pyunits
       cases str[:] = ["*"]
         ?descr "Case ID globs to run. Use --list-cases to inspect IDs."
 
+      pyperf_ci_cases str[:] = ["construction/attach_units/scalar/1", "construction/attach_units/ndarray/1000", "construction/attach_units/ndarray/1000000", "conversion/scaled/scalar/1", "conversion/scaled/ndarray/1000", "conversion/compound/ndarray/1000", "conversion/temperature/ndarray/1000", "arithmetic/add_compatible/scalar/1", "arithmetic/add_compatible/ndarray/1000", "arithmetic/add_compatible/ndarray/1000000", "arithmetic/multiply/ndarray/1000", "arithmetic/sqrt/ndarray/1000", "numpy/np_add/ndarray/1000", "numpy/np_sqrt/ndarray/1000", "numpy/np_sum/ndarray/1000"]
+        ?descr "Representative scalar, array, conversion, arithmetic, and NumPy cases used by the shorter on-demand CI pyperf profile."
+
       libraries str[:] = ["snt", "pint", "unyt", "astropy"]
         ?descr "Unit libraries to compare in the matrix; NumPy is the unranked numeric baseline."
 
@@ -41,6 +44,9 @@ pyunits
     checks
       skip_memory bool = false
         ?descr "Skip separate-process peak RSS probes of quantity construction."
+
+      pyperf_ci_skip_memory bool = true
+        ?descr "Skip construction memory probes in the faster CI pyperf profile."
 
       relative_tolerance float = 1e-12
         ?descr "Relative tolerance for the value correctness checks."
@@ -98,6 +104,19 @@ pyunits
 
       min_time float = 0.1
         ?descr "Minimum calibrated seconds per value in the repeated-measurement protocol."
+
+      ci
+        processes int = 3
+          ?descr "Worker processes per benchmark in the faster CI profile."
+
+        values int = 3
+          ?descr "Measured values per worker in the faster CI profile."
+
+        warmups int = 1
+          ?descr "Warmup values per worker in the faster CI profile."
+
+        min_time float = 0.02
+          ?descr "Minimum calibrated seconds per value in the faster CI profile."
 
   packages
     snt

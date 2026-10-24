@@ -80,6 +80,8 @@ def report(config_path, snapshot_path):
     lines = [
         "# Python units: pyperf comparison",
         "",
+        ("Profile: CI representative subset; it is a shorter screening run, not the exhaustive matrix."
+         if settings.get("profile") == "ci" else "Profile: full configured matrix."),
         f"Run: {first['run_utc']} on {first['platform']} ({first['architecture']}); Python {first['python_version']}.",
         f"Checks: **{passed}/{len(rows)} PASS** across {case_count} {'case' if case_count == 1 else 'cases'}"
         + (f"; {unsupported} unsupported" if unsupported else "") + ".",

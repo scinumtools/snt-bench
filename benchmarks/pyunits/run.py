@@ -40,6 +40,8 @@ def main():
     parser.add_argument("-b", "--benchmark", choices=("pyunits", "pyunits-basic"))
     parser.add_argument("--source", "--snt-source", choices=("pinned", "pypi", "local"))
     parser.add_argument("--mode", choices=("quick", "pyperf"))
+    parser.add_argument("--profile", choices=("full", "ci"), default="full",
+                        help="Use all configured cases or the shorter CI pyperf case set")
     mode_group = parser.add_mutually_exclusive_group()
     mode_group.add_argument("--quick", action="store_const", const="quick", dest="mode_alias")
     mode_group.add_argument("--pyperf", action="store_const", const="pyperf", dest="mode_alias")
@@ -144,11 +146,13 @@ def main():
         parser.error("invalid run.benchmark or run.mode in config.dip")
     if benchmark == "pyunits-basic" and mode != "quick":
         parser.error("pyunits-basic has only its fixed single-run timing method")
+    if args.profile == "ci" and (benchmark != "pyunits" or mode != "pyperf"):
+        parser.error("--profile ci applies only to the pyunits pyperf benchmark")
     if benchmark == "pyunits-basic" and any((args.case, args.size, args.list_cases)):
         parser.error("case, size, and list-cases apply only to pyunits")
 
     settings = {
-        "benchmark": benchmark, "source": source, "mode": mode,
+        "benchmark": benchmark, "source": source, "mode": mode, "profile": args.profile,
         "sizes": args.size if args.size is not None else as_list(values["pyunits.execution.selection.sizes"].value),
         "cases": args.case if args.case is not None else as_list(get("execution.selection.cases")),
         "libraries": args.library if args.library is not None else as_list(get(
@@ -169,12 +173,27 @@ def main():
         "scalar_loops": get("workloads.basic.scalar_loops"), "array_size": get("workloads.basic.array_size"),
         "array_seed": get("workloads.basic.array_seed"),
     }
+    if args.profile == "ci":
+        if args.case is None:
+            settings["cases"] = as_list(get("execution.selection.pyperf_ci_cases"))
+        if args.processes is None:
+            settings["processes"] = get("timing.pyperf.ci.processes")
+        if args.values is None:
+            settings["values"] = get("timing.pyperf.ci.values")
+        if args.warmups is None:
+            settings["warmups"] = get("timing.pyperf.ci.warmups")
+        if args.min_time is None:
+            settings["min_time"] = get("timing.pyperf.ci.min_time")
+        if args.skip_memory is None:
+            settings["skip_memory"] = get("execution.checks.pyperf_ci_skip_memory")
     if benchmark == "pyunits" and "sympy" in settings["libraries"]:
         parser.error("SymPy is available only in pyunits-basic")
     if args.list_cases:
-        subprocess.run([python_bin, str(BENCH_DIR / "matrix.py"), "--config", str(config_path),
-                        "--list-cases", "--sizes",
-                        *(str(n) for n in settings["sizes"])], check=True, env=env)
+        list_command = [python_bin, str(BENCH_DIR / "matrix.py"), "--config", str(config_path),
+                        "--list-cases", "--sizes", *(str(n) for n in settings["sizes"])]
+        for pattern in settings["cases"]:
+            list_command.extend(("--case", pattern))
+        subprocess.run(list_command, check=True, env=env)
         return
 
     results_dir = Path(get("execution.paths.output_dir"))
