@@ -23,8 +23,8 @@ the pinned unit-library releases.
 ## Uncertainty propagation
 
 Configured unit-uncertainty cases compared with first-order analytical
-propagation and seeded Monte Carlo estimates. SNT interval bounds and Pint
-standard deviations are identified separately.
+propagation and seeded Monte Carlo estimates. SNT interval bounds and Pint and
+MetroloPy standard uncertainties are identified separately.
 
 [Methods, full results, and run instructions](benchmarks/uncertainty-propagation/README.md).
 

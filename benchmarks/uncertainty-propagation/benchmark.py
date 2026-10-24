@@ -1,65 +1,167 @@
-"""Compare propagated uncertainty estimates with analytic and Monte Carlo references."""
-import argparse, fnmatch, math
+"""Compare uncertainty propagation estimates with analytic and Monte Carlo references."""
+import argparse
+import fnmatch
+import math
 from pathlib import Path
+
 import numpy as np
 
+
 def main():
- p=argparse.ArgumentParser(description=__doc__); p.add_argument("--config",type=Path,required=True); p.add_argument("--output",type=Path,required=True); p.add_argument("--figure",type=Path,required=True); p.add_argument("--case",action="append"); p.add_argument("--library",action="append"); p.add_argument("--samples",type=int)
- a=p.parse_args()
- from scinumtools3.dip import DIP
- d=DIP(); d.add_file(a.config); cfg=d.parse()
- def get(path):return cfg[f"uncertainty_propagation.{path}"].value
- import pandas as pd, matplotlib
- matplotlib.use("Agg")
- import matplotlib.pyplot as plt, pint
- from uncertainties import ufloat
- from scinumtools3.puq import Quantity
- cases={"linear_conversion":("linear_conversion",),"addition":("addition",),"product":("product",),"reciprocal":("reciprocal",)}
- selected=[k for k in cases if any(fnmatch.fnmatchcase(k,x) for x in (a.case or get("workload.selection.cases")))]; libs=a.library or get("execution.libraries"); n=a.samples or int(get("execution.samples")); rng=np.random.default_rng(int(get("execution.seed"))); ur=pint.UnitRegistry(autoconvert_offset_to_baseunit=True); rows=[]
- tail=(1-float(get("semantics.normal_coverage")))/2
- def snt(x,sigma,unit):return Quantity(x,sigma,unit)
- for case in selected:
-  spec=case; pfx="workload."+spec+"."; mc=rng
-  if case=="linear_conversion":
-   x=float(get(pfx+"nominal")); sx=float(get(pfx+"standard_deviation")); vals=mc.normal(x,sx,n)
-   source=get(pfx+"source_unit"); target=get(pfx+"target_unit")
-   scale=float(get(pfx+"scale_num"))/float(get(pfx+"scale_den")); offset=float(get(pfx+"offset_num"))/float(get(pfx+"offset_den"))
-   out=vals*scale+offset
-   nominal=x*scale+offset; analytic=sx*scale
-   for lib in libs:
-    if lib=="snt": q=snt(x,sx,{"degC":"Cel"}.get(source,source)).convert({"degC":"Cel"}.get(target,target)); y=float(q.value()); sigma=float(q.uncertainty())
-    else:
-     q=ur.Quantity(ufloat(x,sx),"degC").to("degF"); y=float(q.magnitude.nominal_value); sigma=float(q.magnitude.std_dev)
-    rows.append(dict(case_id=case,library=lib,model="SNT uncertainty magnitude" if lib=="snt" else "Pint standard deviation",nominal=y,reported_uncertainty=sigma,analytic_standard_deviation=analytic,monte_carlo_mean=float(np.mean(out)),monte_carlo_sd=float(np.std(out,ddof=1)),mc_central_low=float(np.quantile(out,tail)),mc_central_high=float(np.quantile(out,1-tail)),reported_interval_low=y-sigma,reported_interval_high=y+sigma,mc_coverage=float(np.mean((out>=y-sigma)&(out<=y+sigma))),unit="degF"))
-  elif case=="addition":
-   x=float(get(pfx+"x")); sx=float(get(pfx+"sigma_x")); y=float(get(pfx+"y")); sy=float(get(pfx+"sigma_y")); unit=get(pfx+"unit"); xx=mc.normal(x,sx,n); yy=mc.normal(y,sy,n); out=xx+yy; nom=x+y; analytic=math.hypot(sx,sy)
-   for lib in libs:
-    if lib=="snt": q=snt(x,sx,unit)+snt(y,sy,unit); v=float(q.value()); sigma=float(q.uncertainty())
-    else: q=ur.Quantity(ufloat(x,sx),unit)+ur.Quantity(ufloat(y,sy),unit); v=float(q.magnitude.nominal_value); sigma=float(q.magnitude.std_dev)
-    rows.append(dict(case_id=case,library=lib,model="SNT absolute bound" if lib=="snt" else "GUM first-order standard deviation",nominal=v,reported_uncertainty=sigma,analytic_standard_deviation=analytic,monte_carlo_mean=float(np.mean(out)),monte_carlo_sd=float(np.std(out,ddof=1)),mc_central_low=float(np.quantile(out,tail)),mc_central_high=float(np.quantile(out,1-tail)),reported_interval_low=v-sigma,reported_interval_high=v+sigma,mc_coverage=float(np.mean((out>=v-sigma)&(out<=v+sigma))),unit=unit))
-  elif case=="product":
-   x=float(get(pfx+"x")); sx=float(get(pfx+"sigma_x")); y=float(get(pfx+"y")); sy=float(get(pfx+"sigma_y")); xu=get(pfx+"x_unit"); yu=get(pfx+"y_unit"); xx=mc.normal(x,sx,n); yy=mc.normal(y,sy,n); out=xx*yy; nom=x*y; analytic=abs(nom)*math.hypot(sx/x,sy/y)
-   for lib in libs:
-    if lib=="snt": q=snt(x,sx,xu)*snt(y,sy,yu); v=float(q.value()); sigma=float(q.uncertainty())
-    else: q=ur.Quantity(ufloat(x,sx),xu)*ur.Quantity(ufloat(y,sy),yu); v=float(q.magnitude.nominal_value); sigma=float(q.magnitude.std_dev)
-    rows.append(dict(case_id=case,library=lib,model="SNT interval bound" if lib=="snt" else "GUM first-order standard deviation",nominal=v,reported_uncertainty=sigma,analytic_standard_deviation=analytic,monte_carlo_mean=float(np.mean(out)),monte_carlo_sd=float(np.std(out,ddof=1)),mc_central_low=float(np.quantile(out,tail)),mc_central_high=float(np.quantile(out,1-tail)),reported_interval_low=v-sigma,reported_interval_high=v+sigma,mc_coverage=float(np.mean((out>=v-sigma)&(out<=v+sigma))),unit=f"{xu}*{yu}"))
-  else:
-   x=float(get(pfx+"x")); sx=float(get(pfx+"sigma_x")); unit=get(pfx+"unit"); xx=mc.normal(x,sx,n); out=1/xx; nom=1/x; analytic=sx/(x*x)
-   for lib in libs:
-    if lib=="snt": q=1/snt(x,sx,unit); v=float(q.value()); sigma=float(q.uncertainty())
-    else: q=1/ur.Quantity(ufloat(x,sx),unit); v=float(q.magnitude.nominal_value); sigma=float(q.magnitude.std_dev)
-    rows.append(dict(case_id=case,library=lib,model="SNT interval bound" if lib=="snt" else "GUM first-order standard deviation",nominal=v,reported_uncertainty=sigma,analytic_standard_deviation=analytic,monte_carlo_mean=float(np.mean(out)),monte_carlo_sd=float(np.std(out,ddof=1)),mc_central_low=float(np.quantile(out,tail)),mc_central_high=float(np.quantile(out,1-tail)),reported_interval_low=v-sigma,reported_interval_high=v+sigma,mc_coverage=float(np.mean((out>=v-sigma)&(out<=v+sigma))),unit=f"1/{unit}"))
- df=pd.DataFrame(rows); df["analytic_vs_mc_relative_error"]=abs(df.monte_carlo_sd-df.analytic_standard_deviation)/df.analytic_standard_deviation
- df["mc_within_configured_tolerance"]=df.analytic_vs_mc_relative_error<=float(get("semantics.tolerance_relative"))
- a.output.parent.mkdir(parents=True,exist_ok=True); df.to_csv(a.output,index=False)
- fig,ax=plt.subplots(figsize=(10,5),constrained_layout=True)
- cases_order=list(dict.fromkeys(df.case_id)); width=.34; x=np.arange(len(cases_order))
- for offset,lib,color in ((-width/2,"snt","#1878a5"),(width/2,"pint","#d87524")):
-  subset=df[df.library==lib].set_index("case_id").reindex(cases_order)
-  ratio=subset.reported_uncertainty/subset.monte_carlo_sd
-  ax.bar(x+offset,ratio,width,color=color,label=f"{lib} {get('packages.'+lib+'.version')}")
- ax.axhline(1,color="black",marker="D",markersize=4,linewidth=1,label="Monte Carlo standard deviation")
- ax.set_xticks(x,[{"linear_conversion":"temperature conversion","addition":"addition","product":"product","reciprocal":"reciprocal"}[case] for case in cases_order]); ax.set_ylabel("reported uncertainty / Monte Carlo standard deviation"); ax.set_title(f"Propagation models relative to seeded Monte Carlo · n={n:,}"); ax.grid(axis="y",alpha=.25); ax.legend(fontsize=8)
- a.figure.parent.mkdir(parents=True,exist_ok=True); fig.savefig(a.figure,dpi=int(get("execution.figure_dpi"))); plt.close(fig)
- print(df[["case_id","library","model","reported_uncertainty","analytic_standard_deviation","monte_carlo_sd"]].to_string(index=False))
-if __name__=="__main__":main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--figure", type=Path, required=True)
+    parser.add_argument("--case", action="append")
+    parser.add_argument("--library", action="append")
+    parser.add_argument("--samples", type=int)
+    args = parser.parse_args()
+
+    from scinumtools3.dip import DIP
+    dip = DIP()
+    dip.add_file(args.config)
+    config = dip.parse()
+
+    def get(path):
+        return config[f"uncertainty_propagation.{path}"].value
+
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    import pint
+    import metrolopy
+    from uncertainties import ufloat
+    from scinumtools3.puq import Quantity
+
+    cases = ("linear_conversion", "addition", "product", "reciprocal")
+    selected = [case for case in cases if any(
+        fnmatch.fnmatchcase(case, pattern)
+        for pattern in (args.case or get("workload.selection.cases"))
+    )]
+    libraries = args.library or get("execution.libraries")
+    samples = args.samples or int(get("execution.samples"))
+    rng = np.random.default_rng(int(get("execution.seed")))
+    registry = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
+    rows = []
+    tail = (1 - float(get("semantics.normal_coverage"))) / 2
+
+    def snt(value, sigma, unit):
+        return Quantity(value, sigma, unit)
+
+    def evaluate(library, operation):
+        result = operation(library)
+        if library == "snt":
+            return float(result.value()), float(result.uncertainty())
+        if library == "pint":
+            return float(result.magnitude.nominal_value), float(result.magnitude.std_dev)
+        return float(result.x), float(result.u)
+
+    def append(case, library, model, value, sigma, analytic, draws, unit):
+        mc_sd = float(np.std(draws, ddof=1))
+        low = float(np.quantile(draws, tail))
+        high = float(np.quantile(draws, 1-tail))
+        rows.append({
+            "case_id": case, "library": library, "model": model,
+            "nominal": value, "reported_uncertainty": sigma,
+            "analytic_standard_deviation": analytic,
+            "monte_carlo_mean": float(np.mean(draws)), "monte_carlo_sd": mc_sd,
+            "mc_central_low": low, "mc_central_high": high,
+            "reported_interval_low": value-sigma,
+            "reported_interval_high": value+sigma,
+            "mc_coverage": float(np.mean((draws >= value-sigma) & (draws <= value+sigma))),
+            "unit": unit,
+        })
+
+    for case in selected:
+        prefix = f"workload.{case}."
+        if case == "linear_conversion":
+            x = float(get(prefix+"nominal"))
+            sx = float(get(prefix+"standard_deviation"))
+            source, target = get(prefix+"source_unit"), get(prefix+"target_unit")
+            scale = float(get(prefix+"scale_num")) / float(get(prefix+"scale_den"))
+            offset = float(get(prefix+"offset_num")) / float(get(prefix+"offset_den"))
+            draws = rng.normal(x, sx, samples)*scale + offset
+            analytic = sx*scale
+            for library in libraries:
+                def operation(which):
+                    if which == "snt":
+                        source_snt = {"degC": "Cel"}.get(source, source)
+                        target_snt = {"degC": "Cel"}.get(target, target)
+                        return snt(x, sx, source_snt).convert(target_snt)
+                    if which == "pint":
+                        return registry.Quantity(ufloat(x, sx), source).to(target)
+                    return metrolopy.gummy(x, u=sx, unit=source).convert(target)
+                value, sigma = evaluate(library, operation)
+                append(case, library, f"{library} standard uncertainty", value, sigma, analytic, draws, target)
+
+        elif case in ("addition", "product"):
+            x, sx = float(get(prefix+"x")), float(get(prefix+"sigma_x"))
+            y, sy = float(get(prefix+"y")), float(get(prefix+"sigma_y"))
+            xx, yy = rng.normal(x, sx, samples), rng.normal(y, sy, samples)
+            if case == "addition":
+                unit = get(prefix+"unit")
+                draws, analytic = xx+yy, math.hypot(sx, sy)
+                def operation(which):
+                    if which == "snt": return snt(x, sx, unit)+snt(y, sy, unit)
+                    if which == "pint": return registry.Quantity(ufloat(x, sx), unit)+registry.Quantity(ufloat(y, sy), unit)
+                    return metrolopy.gummy(x, u=sx, unit=unit)+metrolopy.gummy(y, u=sy, unit=unit)
+            else:
+                xu, yu = get(prefix+"x_unit"), get(prefix+"y_unit")
+                unit = f"{xu}*{yu}"
+                draws = xx*yy
+                analytic = abs(x*y)*math.hypot(sx/x, sy/y)
+                def operation(which):
+                    if which == "snt": return snt(x, sx, xu)*snt(y, sy, yu)
+                    if which == "pint": return registry.Quantity(ufloat(x, sx), xu)*registry.Quantity(ufloat(y, sy), yu)
+                    return metrolopy.gummy(x, u=sx, unit=xu)*metrolopy.gummy(y, u=sy, unit=yu)
+            for library in libraries:
+                value, sigma = evaluate(library, operation)
+                model = "SNT absolute bounds" if library == "snt" else f"{library} first-order standard uncertainty"
+                append(case, library, model, value, sigma, analytic, draws, unit)
+
+        else:
+            x, sx, unit = float(get(prefix+"x")), float(get(prefix+"sigma_x")), get(prefix+"unit")
+            draws = 1/rng.normal(x, sx, samples)
+            analytic = sx/(x*x)
+            def operation(which):
+                if which == "snt": return 1/snt(x, sx, unit)
+                if which == "pint": return 1/registry.Quantity(ufloat(x, sx), unit)
+                return 1/metrolopy.gummy(x, u=sx, unit=unit)
+            for library in libraries:
+                value, sigma = evaluate(library, operation)
+                model = "SNT interval bounds" if library == "snt" else f"{library} first-order standard uncertainty"
+                append(case, library, model, value, sigma, analytic, draws, f"1/{unit}")
+
+    frame = pd.DataFrame(rows)
+    frame["analytic_vs_mc_relative_error"] = abs(frame.monte_carlo_sd-frame.analytic_standard_deviation)/frame.analytic_standard_deviation
+    frame["mc_within_configured_tolerance"] = frame.analytic_vs_mc_relative_error <= float(get("semantics.tolerance_relative"))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_csv(args.output, index=False)
+
+    fig, ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
+    case_order = list(dict.fromkeys(frame.case_id))
+    width = 0.8/len(libraries)
+    x = np.arange(len(case_order))
+    colors = {"snt": "#1878a5", "pint": "#d87524", "metrolopy": "#568a45"}
+    for index, library in enumerate(libraries):
+        subset = frame[frame.library == library].set_index("case_id").reindex(case_order)
+        ratio = subset.reported_uncertainty/subset.monte_carlo_sd
+        offset = (index-(len(libraries)-1)/2)*width
+        version = get(f"packages.{library}.version")
+        ax.bar(x+offset, ratio, width, color=colors.get(library), label=f"{library} {version}")
+    ax.axhline(1, color="black", marker="D", markersize=4, linewidth=1, label="Monte Carlo standard deviation")
+    names = {"linear_conversion": "temperature conversion", "addition": "addition", "product": "product", "reciprocal": "reciprocal"}
+    ax.set_xticks(x, [names[case] for case in case_order])
+    ax.set_ylabel("reported uncertainty / Monte Carlo standard deviation")
+    ax.set_title(f"Propagation models relative to seeded Monte Carlo · n={samples:,}")
+    ax.grid(axis="y", alpha=.25)
+    ax.legend(fontsize=8)
+    args.figure.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(args.figure, dpi=int(get("execution.figure_dpi")))
+    plt.close(fig)
+    print(frame[["case_id", "library", "model", "reported_uncertainty", "analytic_standard_deviation", "monte_carlo_sd"]].to_string(index=False))
+
+
+if __name__ == "__main__":
+    main()

@@ -7,8 +7,8 @@ uncertainty_propagation
     output_dir str = "benchmarks/uncertainty-propagation/results"
       ?descr "Directory for timestamped result sets, relative to the repository root."
 
-    libraries str[:] = ["snt", "pint"]
-      ?descr "Libraries included in this run; Pint uncertainty support uses the optional uncertainties package."
+    libraries str[:] = ["snt", "pint", "metrolopy"]
+      ?descr "Libraries included in this run; Pint uses uncertainties and MetroloPy reports GUM first-order standard uncertainties."
 
     samples int = 200000
       ?descr "Monte Carlo draws per case; increase to reduce sampling noise."
@@ -153,6 +153,46 @@ uncertainty_propagation
 
       release str = "https://pypi.org/project/matplotlib/3.11.2/"
 
+    metrolopy
+      version str = "1.1.1"
+        ?descr "Pinned MetroloPy release for unit-aware first-order uncertainty propagation."
+        ?rationale "Release: https://pypi.org/project/metrolopy/1.1.1/"
+
+      website str = "https://nrc-cnrc.github.io/MetroloPy/"
+        ?descr "MetroloPy documentation."
+
+      release str = "https://pypi.org/project/metrolopy/1.1.1/"
+
+    scipy
+      version str = "1.18.1"
+        ?descr "Pinned MetroloPy numerical dependency."
+        ?rationale "Release: https://pypi.org/project/scipy/1.18.1/"
+
+      website str = "https://scipy.org/"
+        ?descr "SciPy project documentation."
+
+      release str = "https://pypi.org/project/scipy/1.18.1/"
+
+    pandas
+      version str = "3.1.0"
+        ?descr "Pinned MetroloPy data dependency."
+        ?rationale "Release: https://pypi.org/project/pandas/3.1.0/"
+
+      website str = "https://pandas.pydata.org/"
+        ?descr "pandas project documentation."
+
+      release str = "https://pypi.org/project/pandas/3.1.0/"
+
+    ipython
+      version str = "9.17.1"
+        ?descr "Pinned MetroloPy runtime dependency."
+        ?rationale "Release: https://pypi.org/project/ipython/9.17.1/"
+
+      website str = "https://ipython.org/"
+        ?descr "IPython project documentation."
+
+      release str = "https://pypi.org/project/ipython/9.17.1/"
+
   provenance
     gum str = "https://doi.org/10.59161/JCGM100-2008E"
 
@@ -161,5 +201,7 @@ uncertainty_propagation
     monte_carlo str = "https://doi.org/10.59161/JCGM101-2008"
 
     pint_uncertainties str = "https://pint.readthedocs.io/en/0.26.2/getting/overview.html"
+
+    metrolopy str = "https://nrc-cnrc.github.io/MetroloPy/_build/html/metrolopy.html"
 
     uncertainty_model str = "https://github.com/scinumtools/snt3/blob/ab0597d8c3a304a8282f2098e5af45a67e86ac0d/docs/puel/sections/uncertainty.md"

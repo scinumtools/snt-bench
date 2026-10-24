@@ -20,18 +20,21 @@ def literal_string(source,wanted):
  raise ValueError(f"Missing configured string {wanted}")
 
 def main():
- p=argparse.ArgumentParser(description=__doc__); p.add_argument("--config",type=Path,default=HERE/"config.dip"); p.add_argument("--python"); p.add_argument("--case",action="append"); p.add_argument("--library",action="append",choices=("snt","pint")); p.add_argument("--samples",type=int); p.add_argument("--quick",action="store_true"); a=p.parse_args()
+ p=argparse.ArgumentParser(description=__doc__); p.add_argument("--config",type=Path,default=HERE/"config.dip"); p.add_argument("--python"); p.add_argument("--case",action="append"); p.add_argument("--library",action="append",choices=("snt","pint","metrolopy")); p.add_argument("--samples",type=int); p.add_argument("--quick",action="store_true"); a=p.parse_args()
  config=a.config.resolve(); text=config.read_text(encoding="utf-8"); python=a.python or str(HERE/".venv-pinned"/"bin"/"python")
  if not a.python and not Path(python).exists():
   base_python=literal_string(text,"uncertainty_propagation.execution.python_base")
   subprocess.run([shutil.which(base_python) or base_python,"-m","venv",str(HERE/".venv-pinned")],check=True)
- code="from scinumtools3.dip import DIP; import sys; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); print(' '.join(v[f'uncertainty_propagation.packages.{n}.version'].value for n in ('snt','pint','uncertainties','numpy','matplotlib')))"
+ names=('snt','pint','uncertainties','numpy','matplotlib','metrolopy','scipy','pandas','ipython')
+ code="from scinumtools3.dip import DIP; import sys; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); print(' '.join(v[f'uncertainty_propagation.packages.{n}.version'].value for n in "+repr(names)+"))"
  expected=subprocess.run([python,"-c",code,str(config)],capture_output=True,text=True)
  if expected.returncode:
   if a.python: raise SystemExit("Selected Python environment must include scinumtools3 and scinumtools3.dip.")
-  subprocess.run([python,"-m","pip","install","scinumtools3==0.9.8"],check=True); subprocess.run([python,__file__,*sys.argv[1:]],check=True); return
- pins=expected.stdout.strip().split(); req=["scinumtools3=="+pins[0],"Pint=="+pins[1],"uncertainties=="+pins[2],"numpy=="+pins[3],"matplotlib=="+pins[4]]
- check=subprocess.run([python,"-c","import importlib.metadata as m,sys; print(' '.join(m.version(n) for n in ('scinumtools3','Pint','uncertainties','numpy','matplotlib')))"],capture_output=True,text=True)
+  snt_pin=literal_string(text,"uncertainty_propagation.packages.snt.version")
+  subprocess.run([python,"-m","pip","install","scinumtools3=="+snt_pin],check=True); subprocess.run([python,__file__,*sys.argv[1:]],check=True); return
+ pins=expected.stdout.strip().split(); req=["scinumtools3=="+pins[0],"Pint=="+pins[1],"uncertainties=="+pins[2],"numpy=="+pins[3],"matplotlib=="+pins[4],"MetroloPy=="+pins[5],"scipy=="+pins[6],"pandas=="+pins[7],"ipython=="+pins[8]]
+ dist_names=('scinumtools3','Pint','uncertainties','numpy','matplotlib','metrolopy','scipy','pandas','ipython')
+ check=subprocess.run([python,"-c","import importlib.metadata as m; print(' '.join(m.version(n) for n in "+repr(dist_names)+"))"],capture_output=True,text=True)
  if check.returncode or check.stdout.strip().split()!=pins:
   if a.python: raise SystemExit(f"Pinned versions required: {' '.join(req)}")
   subprocess.run([python,"-m","pip","install",*req],check=True); subprocess.run([python,__file__,*sys.argv[1:]],check=True); return
@@ -43,9 +46,9 @@ def main():
  for x in a.library or (): cmd.extend(["--library",x])
  if a.samples: cmd.extend(["--samples",str(a.samples)])
  subprocess.run(cmd,check=True)
- meta="from scinumtools3.dip import DIP; import sys,json; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); p='uncertainty_propagation.packages.'; names=('snt','pint','uncertainties','numpy','matplotlib'); print(json.dumps({n:{'version':v[p+n+'.version'].value,'website':v[p+n+'.website'].value,'release':v[p+n+'.release'].value} for n in names}))"
+ meta="from scinumtools3.dip import DIP; import sys,json; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); p='uncertainty_propagation.packages.'; names="+repr(names)+"; print(json.dumps({n:{'version':v[p+n+'.version'].value,'website':v[p+n+'.website'].value,'release':v[p+n+'.release'].value} for n in names}))"
  projects=json.loads(subprocess.run([python,"-c",meta,str(config)],capture_output=True,text=True,check=True).stdout)
- provenance_code="from scinumtools3.dip import DIP; import sys,json; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); p='uncertainty_propagation.provenance.'; keys=('gum','gum_amendment_2026','monte_carlo','pint_uncertainties','uncertainty_model'); print(json.dumps({k:v[p+k].value for k in keys}))"
+ provenance_code="from scinumtools3.dip import DIP; import sys,json; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); p='uncertainty_propagation.provenance.'; keys=('gum','gum_amendment_2026','monte_carlo','pint_uncertainties','uncertainty_model','metrolopy'); print(json.dumps({k:v[p+k].value for k in keys}))"
  provenance=json.loads(subprocess.run([python,"-c",provenance_code,str(config)],capture_output=True,text=True,check=True).stdout)
  settings_code="from scinumtools3.dip import DIP; import sys,json; d=DIP(); d.add_file(sys.argv[1]); v=d.parse(); p='uncertainty_propagation.'; g=lambda x:v[p+x].value; print(json.dumps({'samples':g('execution.samples'),'seed':g('execution.seed'),'cases':g('workload.selection.cases'),'libraries':g('execution.libraries'),'coverage':g('semantics.normal_coverage'),'tolerance_relative':g('semantics.tolerance_relative')}))"
  settings=json.loads(subprocess.run([python,"-c",settings_code,str(config)],capture_output=True,text=True,check=True).stdout)
