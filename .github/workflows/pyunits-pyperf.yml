@@ -1,0 +1,53 @@
+name: Python units pyperf
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 4 1 * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pyunits-pyperf
+  cancel-in-progress: false
+
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Read Python version from DIPL
+        id: settings
+        run: python3 benchmarks/pyunits/ci_report.py python-version
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ steps.settings.outputs.python-version }}
+
+      - name: Run pinned pyperf comparison
+        env:
+          MPLBACKEND: Agg
+        run: ./setup.sh --source pinned --mode pyperf
+
+      - name: Summarize results
+        id: report
+        run: benchmarks/pyunits/.venv-pinned/bin/python benchmarks/pyunits/ci_report.py report
+
+      - name: Upload comparison results
+        uses: actions/upload-artifact@v7
+        with:
+          name: pyunits-pyperf-${{ github.run_id }}
+          path: |
+            ${{ steps.report.outputs.result_base }}.csv
+            ${{ steps.report.outputs.result_base }}_samples.csv
+            ${{ steps.report.outputs.result_base }}.pyperf.json
+            ${{ steps.report.outputs.result_base }}.png
+            ${{ steps.report.outputs.result_base }}.config.json
+            ${{ steps.report.outputs.result_base }}.summary.md
+          if-no-files-found: error
+          retention-days: 90

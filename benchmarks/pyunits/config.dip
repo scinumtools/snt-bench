@@ -1,0 +1,180 @@
+# Benchmark controls and package provenance. Values are read by run.py.
+# The operations and their units define the comparison protocol in matrix.py.
+pyunits
+  execution
+    target
+      benchmark str = "pyunits"
+        ?descr "pyunits runs the operation matrix; pyunits-basic runs the scalar and array comparison."
+
+      source str = "pinned"
+        ?descr "pinned installs the release below; local uses a neighboring built checkout."
+
+      mode str = "quick"
+        ?descr "quick is a short feedback run; pyperf uses worker processes and saves raw JSON."
+
+    paths
+      local_repo str = "../scinumtools3"
+        ?descr "Path from this repository to the local SNT3 source checkout."
+
+      python_base str = "python3.13"
+        ?descr "Interpreter used to create the pinned virtual environment."
+
+      local_base_python str = ".venv/bin/python"
+        ?descr "Interpreter path relative to local_repo; its ABI must match the built binding."
+
+      output_dir str = "benchmarks/pyunits/results"
+        ?descr "Results directory relative to this repository."
+
+    selection
+      sizes int[:] = [3, 1000, 1000000]
+        ?descr "Array sizes in the operation matrix; scalar size 1 is always included."
+
+      cases str[:] = ["*"]
+        ?descr "Case ID globs to run. Use --list-cases to inspect IDs."
+
+      libraries str[:] = ["snt", "pint", "unyt", "astropy"]
+        ?descr "Unit libraries to compare in the matrix; NumPy is the unranked numeric baseline."
+
+      basic_libraries str[:] = ["snt", "pint", "unyt", "astropy", "sympy"]
+        ?descr "Unit libraries to time in the basic scalar comparison; SymPy has no array case."
+
+    checks
+      skip_memory bool = false
+        ?descr "Skip separate-process peak RSS probes of quantity construction."
+
+      relative_tolerance float = 1e-12
+        ?descr "Relative tolerance for the value correctness checks."
+
+      absolute_tolerance float = 1e-12
+        ?descr "Absolute tolerance for the value correctness checks."
+
+  workloads
+    matrix
+      input_start float = 1.0
+        ?descr "First numeric input in linspace for matrix array cases."
+
+      input_stop float = 2.0
+        ?descr "Last numeric input in linspace for matrix array cases."
+
+    basic
+      scalar_m float = 10.0
+        ?descr "First scalar quantity, in metres. Source: SNT3 reference expression."
+
+      scalar_us_ft float = 5.0
+        ?descr "Second scalar quantity, in US feet. Source: SNT3 reference expression."
+
+      scalar_loops int = 5000
+        ?descr "Iterations of the scalar add-and-convert expression."
+
+      array_size int = 100000
+        ?descr "Elements in the one-shot construction-and-conversion workload."
+
+      array_seed int = 0
+        ?descr "NumPy random generator seed for the array workload."
+
+  timing
+    quick
+      warmups int = 2
+        ?descr "Untimed calls before each short single-process measurement."
+
+      values int = 5
+        ?descr "Timed samples per quick benchmark."
+
+      target_seconds float = 0.01
+        ?descr "Target time per quick sample, used to calculate loop count."
+
+      max_loops int = 100000
+        ?descr "Upper bound on calibrated loops in each quick sample."
+
+    pyperf
+      processes int = 20
+        ?descr "Worker processes per benchmark in the repeated-measurement protocol."
+
+      values int = 3
+        ?descr "Measured values per worker in the repeated-measurement protocol."
+
+      warmups int = 1
+        ?descr "Warmup values per worker in the repeated-measurement protocol."
+
+      min_time float = 0.1
+        ?descr "Minimum calibrated seconds per value in the repeated-measurement protocol."
+
+  packages
+    snt
+      version str = "0.9.8"
+        ?descr "Pinned scinumtools3 release used for the reference comparison."
+        ?rationale "Source: https://pypi.org/project/scinumtools3/0.9.8/"
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 source repository and project home."
+
+    pint
+      version str = "0.26.2"
+        ?descr "Pinned Pint version for repeatable comparisons."
+        ?rationale "Release: https://pypi.org/project/Pint/0.26.2/"
+
+      website str = "https://pint.readthedocs.io/"
+        ?descr "Pint project documentation."
+
+    unyt
+      version str = "3.2.0"
+        ?descr "Pinned unyt version for repeatable comparisons."
+        ?rationale "Release: https://pypi.org/project/unyt/3.2.0/"
+
+      website str = "https://unyt.readthedocs.io/"
+        ?descr "unyt project documentation."
+
+    astropy
+      version str = "8.0.2"
+        ?descr "Pinned Astropy version for repeatable comparisons."
+        ?rationale "Release: https://pypi.org/project/astropy/8.0.2/"
+
+      website str = "https://www.astropy.org/"
+        ?descr "Astropy project home."
+
+    sympy
+      version str = "1.14.0"
+        ?descr "Pinned version used only in the basic scalar comparison."
+        ?rationale "Release: https://pypi.org/project/sympy/1.14.0/"
+
+      website str = "https://www.sympy.org/"
+        ?descr "SymPy project home."
+
+    numpy
+      version str = "2.5.4"
+        ?descr "Pinned numeric array baseline and test input package."
+        ?rationale "Release: https://pypi.org/project/numpy/2.5.4/"
+
+      website str = "https://numpy.org/"
+        ?descr "NumPy project home."
+
+    pandas
+      version str = "3.1.0"
+        ?descr "Pinned CSV summary and console table package."
+        ?rationale "Release: https://pypi.org/project/pandas/3.1.0/"
+
+      website str = "https://pandas.pydata.org/"
+        ?descr "pandas project home."
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned figure generation package."
+        ?rationale "Release: https://pypi.org/project/matplotlib/3.11.2/"
+
+      website str = "https://matplotlib.org/"
+        ?descr "Matplotlib project home."
+
+    pyperf
+      version str = "2.10.0"
+        ?descr "Pinned repeat-measurement runner."
+        ?rationale "Release: https://pypi.org/project/pyperf/2.10.0/"
+
+      website str = "https://pyperf.readthedocs.io/"
+        ?descr "pyperf project documentation."
+
+  provenance
+    reference_revision str = "2e7fde7c8e38d6224c620190e1a5848c2588da04"
+      ?descr "SNT3 Git revision that defines the scalar/array reference workload."
+
+    reference_repository str = {?pyunits.packages.snt.website}
+      ?descr "Upstream SNT3 source repository for the scalar/array reference workload."

@@ -153,6 +153,7 @@ activemq-data/
 .env
 .envrc
 .venv
+.venv-*/
 env/
 venv/
 ENV/
@@ -207,6 +208,14 @@ tempCodeRunnerFile.py
 
 # Ruff stuff:
 .ruff_cache/
+
+# Generated benchmark runs; curated reference snapshots are tracked explicitly.
+benchmarks/pyunits/results/*
+!benchmarks/pyunits/results/README.md
+!benchmarks/pyunits/results/reference-quick.csv
+!benchmarks/pyunits/results/reference-quick_samples.csv
+!benchmarks/pyunits/results/reference-quick.config.json
+!benchmarks/pyunits/results/reference-quick.png
 
 # PyPI configuration file
 .pypirc

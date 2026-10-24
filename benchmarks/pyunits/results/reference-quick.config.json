@@ -1,0 +1,128 @@
+{
+  "config_path": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/config.dip",
+  "config_sha256": "82cc3e6665a29af69e81f530c7e33c505d841879b16dcc07ac9c69c90df6e0e7",
+  "settings": {
+    "benchmark": "pyunits",
+    "source": "pinned",
+    "mode": "quick",
+    "sizes": [
+      3,
+      1000,
+      1000000
+    ],
+    "cases": [
+      "*"
+    ],
+    "libraries": [
+      "snt",
+      "pint",
+      "unyt",
+      "astropy"
+    ],
+    "skip_memory": true,
+    "relative_tolerance": 1e-12,
+    "absolute_tolerance": 1e-12,
+    "input_start": 1.0,
+    "input_stop": 2.0,
+    "quick_warmups": 2,
+    "quick_values": 5,
+    "quick_target_seconds": 0.01,
+    "quick_max_loops": 100000,
+    "processes": 20,
+    "values": 3,
+    "warmups": 1,
+    "min_time": 0.1,
+    "scalar_m": 10.0,
+    "scalar_us_ft": 5.0,
+    "scalar_loops": 5000,
+    "array_size": 100000,
+    "array_seed": 0
+  },
+  "projects": {
+    "snt": {
+      "version": "0.9.8",
+      "website": "https://github.com/scinumtools/snt3"
+    },
+    "pint": {
+      "version": "0.26.2",
+      "website": "https://pint.readthedocs.io/"
+    },
+    "unyt": {
+      "version": "3.2.0",
+      "website": "https://unyt.readthedocs.io/"
+    },
+    "astropy": {
+      "version": "8.0.2",
+      "website": "https://www.astropy.org/"
+    },
+    "sympy": {
+      "version": "1.14.0",
+      "website": "https://www.sympy.org/"
+    },
+    "numpy": {
+      "version": "2.5.4",
+      "website": "https://numpy.org/"
+    },
+    "pandas": {
+      "version": "3.1.0",
+      "website": "https://pandas.pydata.org/"
+    },
+    "matplotlib": {
+      "version": "3.11.2",
+      "website": "https://matplotlib.org/"
+    },
+    "pyperf": {
+      "version": "2.10.0",
+      "website": "https://pyperf.readthedocs.io/"
+    }
+  },
+  "provenance": {
+    "reference_revision": "2e7fde7c8e38d6224c620190e1a5848c2588da04",
+    "reference_repository": "https://github.com/scinumtools/snt3"
+  },
+  "command": [
+    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/bin/python",
+    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/matrix.py",
+    "--config",
+    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/config.dip",
+    "--csv-output",
+    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/results/pyunits_pinned_quick_20261024T190943Z_20789.csv",
+    "--sizes",
+    "3",
+    "1000",
+    "1000000",
+    "--input-start",
+    "1.0",
+    "--input-stop",
+    "2.0",
+    "--quick-warmups",
+    "2",
+    "--quick-values",
+    "5",
+    "--quick-target-seconds",
+    "0.01",
+    "--quick-max-loops",
+    "100000",
+    "--rtol",
+    "1e-12",
+    "--atol",
+    "1e-12",
+    "--case",
+    "*",
+    "--library",
+    "snt",
+    "--library",
+    "pint",
+    "--library",
+    "unyt",
+    "--library",
+    "astropy",
+    "--skip-memory",
+    "--quick"
+  ],
+  "python": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/bin/python",
+  "actual_snt": {
+    "version": "0.9.8",
+    "package_path": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/lib/python3.13/site-packages/scinumtools3/__init__.py"
+  }
+}
