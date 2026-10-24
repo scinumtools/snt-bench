@@ -1,0 +1,6 @@
+schemas[]
+  name = "runconfig"
+  file = "schema.dip"
+
+code[]
+  file = "invalid--wrong-type.dip"

@@ -1,0 +1,8 @@
+simulation : runconfig
+  name = "run-02"
+  mode = "transient"
+  steps = 20
+  grid
+    nx = 128
+    ny = 64
+    spacing_m = 0.005 m

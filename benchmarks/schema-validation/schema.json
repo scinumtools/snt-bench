@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/scinumtools/snt-bench/benchmarks/schema-validation/schema.json",
+  "title": "Scientific run configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "mode", "steps", "grid"],
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z][a-z0-9-]{2,31}$"},
+    "mode": {"enum": ["steady", "transient"]},
+    "steps": {"type": "integer", "minimum": 1, "maximum": 10000},
+    "grid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nx", "ny", "spacing_m"],
+      "properties": {
+        "nx": {"type": "integer", "minimum": 1},
+        "ny": {"type": "integer", "minimum": 1},
+        "spacing_m": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  },
+  "if": {"properties": {"mode": {"const": "steady"}}, "required": ["mode"]},
+  "then": {"properties": {"steps": {"const": 1}}}
+}

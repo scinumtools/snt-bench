@@ -1,0 +1,12 @@
+class Grid {
+  nx: Int((n) -> n > 0)
+  ny: Int((n) -> n > 0)
+  spacing_m: Number((n) -> n.isFinite && n > 0)
+}
+
+class Run {
+  name: String((s) -> s.matches(Regex("^[a-z][a-z0-9-]{2,31}$")))
+  mode: "steady" | "transient"
+  steps: Int((n) -> if (mode == "steady") n == 1 else n >= 1 && n <= 10000)
+  grid: Grid
+}

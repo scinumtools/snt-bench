@@ -38,6 +38,17 @@ case "$benchmark" in
     fi
     exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/pyserial/run.py"
     ;;
+  schema-validation)
+    schema_args=()
+    for ((index=0; index<${#args[@]}; index++)); do
+      case "${args[index]}" in
+        -b|--benchmark) ((index+=1)) ;;
+        --benchmark=*) ;;
+        *) schema_args+=("${args[index]}") ;;
+      esac
+    done
+    exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/schema-validation/run.py" "${schema_args[@]}"
+    ;;
   *)
     echo "Unknown benchmark: $benchmark" >&2
     exit 2

@@ -1,0 +1,6 @@
+schemas[]
+  name = "runconfig"
+  file = "schema.dip"
+
+code[]
+  file = "valid--transient.dip"

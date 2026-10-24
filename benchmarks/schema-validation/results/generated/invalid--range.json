@@ -1,0 +1,10 @@
+{
+  "name": "run-01",
+  "mode": "transient",
+  "steps": 10001,
+  "grid": {
+    "nx": 64,
+    "ny": 32,
+    "spacing_m": 0.01
+  }
+}

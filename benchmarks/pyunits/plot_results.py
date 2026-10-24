@@ -55,6 +55,15 @@ def operation_label(row):
     return f"NumPy: {row['operation']}"
 
 
+def library_label(library, versions):
+    version = versions.get(library)
+    if library == "numpy":
+        name = "NumPy reference (no units)"
+    else:
+        name = LIBRARY_LABELS[library]
+    return f"{name} {version}" if version else name
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True,
@@ -65,11 +74,19 @@ def main():
 
     grouped = defaultdict(list)
     metadata = None
+    library_versions = {}
     seen_numpy_cases = set()
     with args.input.open(newline="") as csv_file:
         reader = csv.DictReader(csv_file)
         matrix_format = "group" in (reader.fieldnames or ())
         for row in reader:
+            library = row.get("library")
+            if library and row.get("library_version"):
+                library_versions.setdefault(library, row["library_version"])
+            if row.get("numpy_version"):
+                library_versions.setdefault("numpy", row["numpy_version"])
+            if row.get("scinumtools3_version"):
+                library_versions["snt"] = row["scinumtools3_version"]
             if matrix_format:
                 case_id = row["case_id"]
                 baseline = row.get("numpy_median_seconds")
@@ -160,17 +177,18 @@ def main():
     library_handles = [
         Line2D([0], [0], color=LIBRARY_COLORS[library],
                linestyle=LINE_STYLES.get(library, "-"),
-               marker=MARKERS.get(library, "o"), linewidth=2.0, label=LIBRARY_LABELS[library])
+               marker=MARKERS.get(library, "o"), linewidth=2.0,
+               label=library_label(library, library_versions))
         for library in active_libraries
     ]
     if len(operations) % columns:
         legend_ax = flat_axes[len(operations)]
         legend_ax.set_axis_off()
-        legend_ax.legend(handles=library_handles, title="Library (color)",
+        legend_ax.legend(handles=library_handles, title="Library (color; version)",
                          loc="center", frameon=False, fontsize=10)
         spare_axes = flat_axes[len(operations) + 1:]
     else:
-        fig.legend(handles=library_handles, title="Library (color)",
+        fig.legend(handles=library_handles, title="Library (color; version)",
                    loc="outside lower center", ncols=4, frameon=False, fontsize=9)
         spare_axes = flat_axes[len(operations):]
     for ax in spare_axes:

@@ -1,0 +1,8 @@
+simulation : runconfig
+  name = "run-01"
+  mode = "steady"
+  steps = 1
+  grid
+    nx = "sixty-four"
+    ny = 32
+    spacing_m = 0.01 m

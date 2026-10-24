@@ -1,0 +1,10 @@
+{
+  "name": "run-01",
+  "mode": "steady",
+  "steps": 5,
+  "grid": {
+    "nx": 64,
+    "ny": 32,
+    "spacing_m": 0.01
+  }
+}

@@ -1,0 +1,18 @@
+participant,case_id,expected_valid,observed_valid,status,diagnostic
+dipl,valid/steady,True,False,FAIL,"[SNT-DIP] Unparsed input
+  details:    Additional text remains after the parsed node type.
+  at:         DIP0_FILE0:29 |     spacing_m float m = 0.01
+  suggestion: Check the syntax and remove or correct the unparsed text.
+  source:     scinumtools3/src/snt/dip/parsers.cpp:324"
+dipl,valid/transient,True,False,FAIL,"[SNT-DIP] Unparsed input
+  details:    Additional text remains after the parsed node type.
+  at:         DIP0_FILE0:28 |     spacing_m float m = 0.005
+  suggestion: Check the syntax and remove or correct the unparsed text.
+  source:     scinumtools3/src/snt/dip/parsers.cpp:324"
+dipl,invalid/missing-required,False,False,PASS,
+dipl,invalid/wrong-type,False,False,PASS,
+dipl,invalid/enum,False,False,PASS,
+dipl,invalid/range,False,False,PASS,
+dipl,invalid/pattern,False,False,PASS,
+dipl,invalid/nested-bound,False,False,PASS,
+dipl,invalid/cross-field,False,False,PASS,

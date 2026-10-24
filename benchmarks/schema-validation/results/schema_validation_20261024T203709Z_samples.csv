@@ -1,0 +1,17 @@
+run_utc,participant,participant_version,case_id,case_class,sample,elapsed_ns,elapsed_ms,platform,python_version
+2026-10-24T20:37:09+00:00,dipl,0.9.8,valid/steady,valid,1,14708667,14.708667,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,valid/transient,valid,1,14088375,14.088375,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/missing-required,invalid,1,13815917,13.815917,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/wrong-type,invalid,1,14644583,14.644583,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/enum,invalid,1,13996542,13.996542,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/range,invalid,1,13930000,13.93,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/pattern,invalid,1,14623708,14.623708,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,dipl,0.9.8,invalid/nested-bound,invalid,1,14210625,14.210625,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,jsonschema,4.26.0,valid/steady,valid,1,76031750,76.03175,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,jsonschema,4.26.0,valid/transient,valid,1,76377084,76.377084,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:09+00:00,jsonschema,4.26.0,invalid/missing-required,invalid,1,75182916,75.182916,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:10+00:00,jsonschema,4.26.0,invalid/wrong-type,invalid,1,77116500,77.1165,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:10+00:00,jsonschema,4.26.0,invalid/enum,invalid,1,76312458,76.312458,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:10+00:00,jsonschema,4.26.0,invalid/range,invalid,1,77303625,77.303625,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:10+00:00,jsonschema,4.26.0,invalid/pattern,invalid,1,76868791,76.868791,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
+2026-10-24T20:37:10+00:00,jsonschema,4.26.0,invalid/nested-bound,invalid,1,76946250,76.94625,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15

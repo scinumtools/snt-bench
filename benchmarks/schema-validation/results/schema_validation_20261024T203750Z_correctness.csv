@@ -1,0 +1,47 @@
+participant,case_id,expected_valid,observed_valid,status,diagnostic
+dipl,valid/steady,True,True,PASS,
+dipl,valid/transient,True,True,PASS,
+dipl,invalid/missing-required,False,False,PASS,
+dipl,invalid/wrong-type,False,False,PASS,
+dipl,invalid/enum,False,False,PASS,
+dipl,invalid/range,False,False,PASS,
+dipl,invalid/pattern,False,False,PASS,
+dipl,invalid/nested-bound,False,False,PASS,
+jsonschema,valid/steady,True,True,PASS,
+jsonschema,valid/transient,True,True,PASS,
+jsonschema,invalid/missing-required,False,False,PASS,
+jsonschema,invalid/wrong-type,False,False,PASS,
+jsonschema,invalid/enum,False,False,PASS,
+jsonschema,invalid/range,False,False,PASS,
+jsonschema,invalid/pattern,False,False,PASS,
+jsonschema,invalid/nested-bound,False,False,PASS,
+cue,valid/steady,True,False,FAIL,"grid: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--steady.json:5:4
+mode: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--steady.json:3:4
+name: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--steady.json:2:4
+steps: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--steady.json:4:4"
+cue,valid/transient,True,False,FAIL,"grid: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--transient.json:5:4
+mode: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--transient.json:3:4
+name: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--transient.json:2:4
+steps: field not allowed:
+    ./benchmarks/schema-validation/results/generated/valid--transient.json:4:4"
+cue,invalid/missing-required,False,False,PASS,
+cue,invalid/wrong-type,False,False,PASS,
+cue,invalid/enum,False,False,PASS,
+cue,invalid/range,False,False,PASS,
+cue,invalid/pattern,False,False,PASS,
+cue,invalid/nested-bound,False,False,PASS,
+pkl,valid/steady,True,True,PASS,
+pkl,valid/transient,True,True,PASS,
+pkl,invalid/missing-required,False,False,PASS,
+pkl,invalid/wrong-type,False,False,PASS,
+pkl,invalid/enum,False,False,PASS,
+pkl,invalid/range,False,False,PASS,
+pkl,invalid/pattern,False,False,PASS,
+pkl,invalid/nested-bound,False,False,PASS,

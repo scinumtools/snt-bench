@@ -1,0 +1,9 @@
+{
+  "mode": "steady",
+  "steps": 1,
+  "grid": {
+    "nx": 64,
+    "ny": 32,
+    "spacing_m": 0.01
+  }
+}

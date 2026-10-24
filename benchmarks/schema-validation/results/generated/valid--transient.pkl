@@ -1,0 +1,16 @@
+import "schema.pkl"
+
+run: schema.Run = new {
+  name = "run-02"
+  mode = "transient"
+  steps = 20
+  grid = new schema.Grid {
+    nx = 128
+    ny = 64
+    spacing_m = 0.005
+  }
+}
+
+output {
+  value = run
+}

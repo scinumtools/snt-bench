@@ -1,0 +1,42 @@
+[
+  {
+    "id": "valid/steady",
+    "valid": true,
+    "data": {"name": "run-01", "mode": "steady", "steps": 1, "grid": {"nx": 64, "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "valid/transient",
+    "valid": true,
+    "data": {"name": "run-02", "mode": "transient", "steps": 20, "grid": {"nx": 128, "ny": 64, "spacing_m": 0.005}}
+  },
+  {
+    "id": "invalid/missing-required",
+    "valid": false,
+    "data": {"mode": "steady", "steps": 1, "grid": {"nx": 64, "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "invalid/wrong-type",
+    "valid": false,
+    "data": {"name": "run-01", "mode": "steady", "steps": 1, "grid": {"nx": "sixty-four", "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "invalid/enum",
+    "valid": false,
+    "data": {"name": "run-01", "mode": "adaptive", "steps": 1, "grid": {"nx": 64, "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "invalid/range",
+    "valid": false,
+    "data": {"name": "run-01", "mode": "transient", "steps": 10001, "grid": {"nx": 64, "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "invalid/pattern",
+    "valid": false,
+    "data": {"name": "Run 01", "mode": "steady", "steps": 1, "grid": {"nx": 64, "ny": 32, "spacing_m": 0.01}}
+  },
+  {
+    "id": "invalid/nested-bound",
+    "valid": false,
+    "data": {"name": "run-01", "mode": "steady", "steps": 1, "grid": {"nx": 0, "ny": 32, "spacing_m": 0.01}}
+  }
+]

@@ -27,6 +27,8 @@ The default quick method uses two warmups and five samples per format and size, 
 
 ![Reference parsing times by parameter count and encoded document size](results/reference-quick.png)
 
+The figure legend names each parser and shows its pinned package version; the standard-library parsers are labeled with the Python version.
+
 The [full CSV](results/reference-quick.csv) and [effective configuration](results/reference-quick.config.json) contain the measurements and environment for this figure.
 
 All 16 format-and-size cases in this reference passed exact equality checks. JSON has the lowest median at all four parameter counts in this run. At 10,000 parameters, the medians are 1.58 ms for JSON, 27.01 ms for TOML, 266.84 ms for YAML, and 1.182 s for DIPL. The encoded documents at that size range from 139 kB for TOML to 239 kB for DIPL. DIPL's timed path includes evaluating typed nodes and extracting them into the shared Python mapping, so the result includes more work than a direct dictionary decode. The DIPL case also had a 59 ms interquartile range at 10,000 parameters. Treat these as measurements of the selected parsers and workload on one machine, not a general ranking of the data formats.

@@ -1,0 +1,9 @@
+participant,case_id,expected_valid,observed_valid,status,diagnostic
+dipl,valid/steady,True,True,PASS,
+dipl,valid/transient,True,True,PASS,
+dipl,invalid/missing-required,False,False,PASS,
+dipl,invalid/wrong-type,False,True,FAIL,
+dipl,invalid/enum,False,False,PASS,
+dipl,invalid/range,False,False,PASS,
+dipl,invalid/pattern,False,False,PASS,
+dipl,invalid/nested-bound,False,False,PASS,

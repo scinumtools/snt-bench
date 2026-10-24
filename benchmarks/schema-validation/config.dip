@@ -1,0 +1,112 @@
+# Reproducible controls and provenance for the schema-validation comparison.
+schema_validation
+  execution
+    environment
+      python_base str = "python3.13"
+        ?descr "Interpreter used to create the isolated pinned Python environment."
+
+    paths
+      cases_file str = "benchmarks/schema-validation/cases.json"
+        ?descr "Shared fixture corpus containing valid and invalid scientific configuration documents."
+
+      json_schema_file str = "benchmarks/schema-validation/schema.json"
+        ?descr "JSON Schema participant's validation schema."
+
+      cue_schema_file str = "benchmarks/schema-validation/schema.cue"
+        ?descr "CUE participant's validation schema."
+
+      pkl_schema_file str = "benchmarks/schema-validation/schema.pkl"
+        ?descr "Pkl participant's typed validation schema."
+
+      dipl_schema_file str = "benchmarks/schema-validation/schema.dip"
+        ?descr "DIPL participant's reusable validation schema."
+
+      output_dir str = "benchmarks/schema-validation/results"
+        ?descr "Directory for per-sample CSV, summary CSV, correctness matrix, and figure."
+
+    selection
+      participants str[:] = ["dipl", "jsonschema", "cue", "pkl"]
+        ?descr "Participants to validate and time; CLI flags can select a subset."
+
+      case_ids str[:] = ["*"]
+        ?descr "Fixture ID globs to select; all fixtures run by default."
+
+  workload
+    snt_command str = "snt"
+      ?descr "SNT CLI executable used to validate DIPL projects."
+
+    cue_command str = "cue"
+      ?descr "CUE CLI executable on PATH."
+
+    pkl_command str = "pkl"
+      ?descr "Pkl CLI executable on PATH."
+
+  timing
+    quick
+      samples int = 5
+        ?descr "Timed process invocations for each participant and fixture."
+
+      warmups int = 1
+        ?descr "Untimed process invocations before collecting quick samples."
+
+  packages
+    scinumtools3
+      version str = "0.9.8"
+        ?descr "Pinned SNT3 release used by the DIPL Python adapter."
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.8/"
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 project home."
+
+      feature_docs str = "https://scinumtools.github.io/snt3/modules/puq/quantities.html"
+        ?descr "Project documentation for PUQ quantities; documentation is not versioned by release."
+
+    jsonschema
+      version str = "4.26.0"
+        ?descr "Pinned Python JSON Schema validator."
+        ?rationale "Release: https://pypi.org/project/jsonschema/4.26.0/"
+
+      website str = "https://github.com/python-jsonschema/jsonschema"
+        ?descr "Python jsonschema project source."
+
+      feature_docs str = "https://python-jsonschema.readthedocs.io/en/v4.26.0/"
+        ?descr "Documentation for the pinned Python JSON Schema validator."
+
+    cue
+      version str = "0.17.1"
+        ?descr "Pinned CUE CLI version; install separately and ensure it is on PATH."
+        ?rationale "Release: https://github.com/cue-lang/cue/releases/tag/v0.17.1"
+
+      website str = "https://cuelang.org/"
+        ?descr "CUE project and official documentation."
+
+      feature_docs str = "https://cuelang.org/docs/concept/how-cue-enables-data-validation/"
+        ?descr "Official data validation guide."
+
+    pkl
+      version str = "0.32.2"
+        ?descr "Pinned Pkl CLI version; install separately and ensure it is on PATH."
+        ?rationale "Release: https://github.com/apple/pkl/releases/tag/0.32.2"
+
+      website str = "https://pkl-lang.org/"
+        ?descr "Pkl project and official documentation."
+
+      feature_docs str = "https://pkl-lang.org/main/0.32.2/language-reference/index.html"
+        ?descr "Language reference for the pinned Pkl version."
+
+    numpy
+      version str = "2.5.4"
+        ?descr "Pinned NumPy dependency for rendering numeric results."
+        ?rationale "Release: https://pypi.org/project/numpy/2.5.4/"
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned Matplotlib dependency used to render the figure."
+        ?rationale "Release: https://pypi.org/project/matplotlib/3.11.2/"
+
+  provenance
+    json_schema_suite str = "https://github.com/json-schema-org/JSON-Schema-Test-Suite"
+      ?descr "Canonical JSON Schema implementation conformance suite; not used as a cross-language timing corpus."
+
+    benchmark_method str = "https://github.com/open-circle/schema-benchmarks"
+      ?descr "Reference for separating initialization, validation, and parsing measurements."

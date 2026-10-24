@@ -23,6 +23,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 import yaml
+from plot_results import plot as plot_parsing_results
 
 from scinumtools3.dip import DIP
 import scinumtools3
@@ -258,29 +259,7 @@ def main():
         writer.writerows(rows)
 
     args.figure.parent.mkdir(parents=True, exist_ok=True)
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.4), layout="constrained")
-    for fmt in formats:
-        points = [row for row in rows if row["format"] == fmt]
-        xs = [row["parameters"] for row in points]
-        times_ms = [row["median_seconds"] * 1e3 for row in points]
-        style = {"marker": "o", "markersize": 5, "linewidth": 2,
-                 "linestyle": LINE_STYLES[fmt], "color": COLORS[fmt], "label": fmt.upper()}
-        axes[0].plot(xs, times_ms, **style)
-        axes[1].plot([row["payload_bytes"] for row in points], times_ms, **style)
-    for ax in axes:
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.grid(which="both", color="#c8cdd3", linewidth=0.6, alpha=0.7)
-    axes[0].set_xlabel("Number of scalar parameters")
-    axes[0].set_xticks(sizes, labels=[str(size) for size in sizes])
-    axes[0].set_ylabel("Median parse time (ms)")
-    axes[0].set_title("Parameters vs. parse time")
-    axes[1].set_xlabel("Encoded document size (bytes)")
-    axes[1].set_ylabel("Median parse time (ms)")
-    axes[1].set_title("Payload vs. parse time")
-    axes[1].legend(title="Format / Python parser", frameon=False)
-    fig.suptitle("Python parsing of equivalent configuration data")
-    fig.savefig(args.figure, dpi=get("execution.outputs.figure_dpi"), bbox_inches="tight")
+    plot_parsing_results(rows, args.figure, get("execution.outputs.figure_dpi"))
     print(f"Results: {args.output}")
     print(f"Figure:  {args.figure}")
     print(pd.DataFrame(rows)[["format", "parameters", "payload_bytes", "median_seconds", "status"]]

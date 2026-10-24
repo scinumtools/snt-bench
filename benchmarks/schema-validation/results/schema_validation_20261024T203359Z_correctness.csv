@@ -1,0 +1,26 @@
+participant,case_id,expected_valid,observed_valid,status,diagnostic
+dipl,valid/steady,True,False,FAIL,"Traceback (most recent call last):
+  File ""/Users/perseus/Projects/snt-bench/benchmarks/schema-validation/validate_python.py"", line 42, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File ""/Users/perseus/Projects/snt-bench/benchmarks/schema-validation/validate_python.py"", line 26, in main
+    parser.add_schema_file(""runconfig"", args.schema)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: [SNT-DIP] Invalid name
+  details:    The name contains characters that are not all"
+dipl,valid/transient,True,False,FAIL,"Traceback (most recent call last):
+  File ""/Users/perseus/Projects/snt-bench/benchmarks/schema-validation/validate_python.py"", line 42, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File ""/Users/perseus/Projects/snt-bench/benchmarks/schema-validation/validate_python.py"", line 26, in main
+    parser.add_schema_file(""runconfig"", args.schema)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: [SNT-DIP] Invalid name
+  details:    The name contains characters that are not all"
+dipl,invalid/missing-required,False,False,PASS,
+dipl,invalid/wrong-type,False,False,PASS,
+dipl,invalid/enum,False,False,PASS,
+dipl,invalid/range,False,False,PASS,
+dipl,invalid/pattern,False,False,PASS,
+dipl,invalid/nested-bound,False,False,PASS,
+dipl,invalid/cross-field,False,False,PASS,
