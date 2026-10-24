@@ -4,9 +4,31 @@ Official benchmark and comparison repository for [SciNumTools3 (SNT3)](https://g
 
 ## Benchmarks
 
+- [Unit conversion accuracy](benchmarks/unit-conversion-accuracy/README.md)
+- [Uncertainty propagation](benchmarks/uncertainty-propagation/README.md)
 - [Python physical units](benchmarks/pyunits/README.md)
 - [Python configuration parsing](benchmarks/pyserial/README.md)
 - [Schema and configuration validation](benchmarks/schema-validation/README.md)
+
+## Unit conversion accuracy
+
+Binary64 conversion error for five representative conversions, measured against
+exact rational references. Results report ULP distance and relative error for
+the pinned unit-library releases.
+
+[Methods, full results, and run instructions](benchmarks/unit-conversion-accuracy/README.md).
+
+![Unit conversion accuracy against exact rational references](benchmarks/unit-conversion-accuracy/results/reference-quick.png)
+
+## Uncertainty propagation
+
+Configured unit-uncertainty cases compared with first-order analytical
+propagation and seeded Monte Carlo estimates. SNT interval bounds and Pint
+standard deviations are identified separately.
+
+[Methods, full results, and run instructions](benchmarks/uncertainty-propagation/README.md).
+
+![Uncertainty propagation compared with Monte Carlo references](benchmarks/uncertainty-propagation/results/reference-quick.png)
 
 ## Python physical units
 

@@ -225,6 +225,20 @@ benchmarks/pyserial/results/*
 !benchmarks/pyserial/results/reference-quick.config.json
 !benchmarks/pyserial/results/reference-quick.png
 
+# Numerical validation benchmark environments and generated run artifacts.
+benchmarks/unit-conversion-accuracy/.venv-*/
+benchmarks/unit-conversion-accuracy/results/*
+!benchmarks/unit-conversion-accuracy/results/README.md
+!benchmarks/unit-conversion-accuracy/results/reference-quick.csv
+!benchmarks/unit-conversion-accuracy/results/reference-quick.config.json
+!benchmarks/unit-conversion-accuracy/results/reference-quick.png
+benchmarks/uncertainty-propagation/.venv-*/
+benchmarks/uncertainty-propagation/results/*
+!benchmarks/uncertainty-propagation/results/README.md
+!benchmarks/uncertainty-propagation/results/reference-quick.csv
+!benchmarks/uncertainty-propagation/results/reference-quick.config.json
+!benchmarks/uncertainty-propagation/results/reference-quick.png
+
 # PyPI configuration file
 .pypirc
 

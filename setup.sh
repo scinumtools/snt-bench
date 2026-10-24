@@ -49,6 +49,17 @@ case "$benchmark" in
     done
     exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/schema-validation/run.py" "${schema_args[@]}"
     ;;
+  unit-conversion-accuracy|uncertainty-propagation)
+    numerical_args=()
+    for ((index=0; index<${#args[@]}; index++)); do
+      case "${args[index]}" in
+        -b|--benchmark) ((index+=1)) ;;
+        --benchmark=*) ;;
+        *) numerical_args+=("${args[index]}") ;;
+      esac
+    done
+    exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/$benchmark/run.py" "${numerical_args[@]}"
+    ;;
   *)
     echo "Unknown benchmark: $benchmark" >&2
     exit 2

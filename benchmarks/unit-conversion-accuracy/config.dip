@@ -1,0 +1,167 @@
+# User-adjustable numerical accuracy protocol. run.py parses this file as DIPL.
+unit_conversion_accuracy
+  execution
+    python_base str = "python3.13"
+      ?descr "Python interpreter used to create the isolated pinned environment."
+
+    output_dir str = "benchmarks/unit-conversion-accuracy/results"
+      ?descr "Directory for timestamped run outputs, relative to repository root."
+
+    libraries str[:] = ["snt", "pint", "unyt", "astropy"]
+      ?descr "Participating unit libraries; each is evaluated against the same reference cases."
+
+    cases str[:] = ["*"]
+      ?descr "Case ID patterns. Case definitions and exact expressions are in workload.cases."
+
+    figure_dpi int = 160
+      ?descr "Resolution of the summary figure."
+
+  workload
+    inputs float[:] = [-40.0, 0.0, 0.1, 10.0, 1000.0]
+      ?descr "Input magnitudes exercised in each case, in its declared source unit."
+
+    cases
+      scaled_to_micro
+        ?descr "SI prefix conversion from metres to micrometres."
+        source_unit str = "m"
+
+        target_unit str = "um"
+
+        scale_num int = 1000000
+
+        scale_den int = 1
+          ?descr "Exact SI-prefix conversion from metres to micrometres."
+
+      foot_to_metre
+        ?descr "International-foot conversion to metres; the foot is exactly 0.3048 m."
+        source_unit str = "ft"
+
+        target_unit str = "m"
+
+        scale_num int = 381
+
+        scale_den int = 1250
+          ?descr "International foot is exactly 0.3048 m (381/1250)."
+
+      speed_to_kmh
+        ?descr "Compound speed conversion from metres per second to kilometres per hour."
+        source_unit str = "m/s"
+
+        target_unit str = "km/h"
+
+        scale_num int = 18
+
+        scale_den int = 5
+          ?descr "Exact ratio 1 m/s = 3.6 km/h."
+
+      celsius_to_kelvin
+        ?descr "Affine temperature-point conversion from Celsius to kelvin."
+        source_unit str = "degC"
+
+        target_unit str = "K"
+
+        offset_num int = 27315
+
+        offset_den int = 100
+          ?descr "Temperature point conversion: K = degC + 273.15."
+
+      fahrenheit_to_kelvin
+        ?descr "Affine temperature-point conversion from Fahrenheit to kelvin."
+        source_unit str = "degF"
+
+        target_unit str = "K"
+
+        scale_num int = 5
+
+        scale_den int = 9
+
+        offset_num int = 45967
+
+        offset_den int = 100
+          ?descr "Temperature point conversion: K = (degF + 459.67) * 5/9."
+
+  tolerances
+    absolute float = 0.0
+      ?descr "Absolute error acceptance threshold in the target unit."
+
+    relative float = 0.00000000000001
+      ?descr "Relative error acceptance threshold, applied when the reference is nonzero."
+
+    ulp int = 1
+      ?descr "Maximum accepted binary64 ULP distance from the correctly rounded reference."
+
+  packages
+    snt
+      version str = "0.9.8"
+        ?descr "Pinned SNT3 package release."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 project and source repository."
+
+      release str = "https://pypi.org/project/scinumtools3/0.9.8/"
+        ?descr "Pinned package release page."
+
+    pint
+      version str = "0.26.2"
+        ?descr "Pinned Pint package release."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://pint.readthedocs.io/en/0.26.2/"
+        ?descr "Pint documentation for the pinned release."
+
+      release str = "https://pypi.org/project/Pint/0.26.2/"
+        ?descr "Pinned package release page."
+
+    unyt
+      version str = "3.2.0"
+        ?descr "Pinned unyt package release."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://unyt.readthedocs.io/en/3.2.0/"
+        ?descr "unyt documentation for the pinned release."
+
+      release str = "https://pypi.org/project/unyt/3.2.0/"
+        ?descr "Pinned package release page."
+
+    astropy
+      version str = "8.0.2"
+        ?descr "Pinned Astropy package release."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://docs.astropy.org/en/8.0.2/"
+        ?descr "Astropy documentation for the pinned release."
+
+      release str = "https://pypi.org/project/astropy/8.0.2/"
+        ?descr "Pinned package release page."
+
+    numpy
+      version str = "2.5.4"
+        ?descr "Pinned NumPy release used for benchmark support and input handling."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://numpy.org/"
+        ?descr "NumPy project website."
+
+      release str = "https://pypi.org/project/numpy/2.5.4/"
+        ?descr "Pinned package release page."
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned figure rendering package."
+        ?rationale "Release provenance is in the release URL below."
+
+      website str = "https://matplotlib.org/"
+        ?descr "Matplotlib project documentation."
+
+      release str = "https://pypi.org/project/matplotlib/3.11.2/"
+        ?descr "Pinned package release page."
+
+  provenance
+    si_brochure str = "https://www.bipm.org/en/publications/si-brochure"
+
+    foot_definition str = "https://www.nist.gov/pml/special-publication-811"
+
+    error_metrics str = "https://fptalks.org/spec/measures-1.2.html"
+
+    rational_arithmetic str = "https://docs.python.org/3/library/fractions.html"

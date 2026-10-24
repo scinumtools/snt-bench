@@ -1,0 +1,63 @@
+{
+  "config_path": "benchmarks/uncertainty-propagation/config.dip",
+  "config_sha256": "b15dba5f5bf212040c0300fecde8d7fb0d4c2e4865dff7c322a0e63419411832",
+  "config_source": "# User-adjustable uncertainty propagation protocol. run.py parses this file as DIPL.\nuncertainty_propagation\n  execution\n    python_base str = \"python3.13\"\n      ?descr \"Interpreter used to create the isolated pinned environment.\"\n\n    output_dir str = \"benchmarks/uncertainty-propagation/results\"\n      ?descr \"Directory for timestamped result sets, relative to the repository root.\"\n\n    libraries str[:] = [\"snt\", \"pint\"]\n      ?descr \"Libraries included in this run; Pint uncertainty support uses the optional uncertainties package.\"\n\n    samples int = 200000\n      ?descr \"Monte Carlo draws per case; increase to reduce sampling noise.\"\n\n    seed int = 20261025\n      ?descr \"Fixed NumPy generator seed for reproducible independent normal inputs.\"\n\n    figure_dpi int = 160\n      ?descr \"Resolution of the summary figure.\"\n\n  workload\n    selection\n      cases str[:] = [\"*\"]\n        ?descr \"Case ID glob patterns to run.\"\n\n    # Nominals and standard deviations define independent normal input distributions.\n    linear_conversion\n      nominal float = 20.0\n        ?descr \"Nominal temperature in degrees Celsius.\"\n\n      standard_deviation float = 0.2\n        ?descr \"One-standard-deviation input spread in degrees Celsius.\"\n\n      source_unit str = \"degC\"\n        ?descr \"Input temperature point unit.\"\n\n      target_unit str = \"degF\"\n        ?descr \"Output temperature point unit.\"\n\n      scale_num int = 9\n        ?descr \"Exact coefficient numerator in the affine Celsius-to-Fahrenheit reference.\"\n\n      scale_den int = 5\n        ?descr \"Exact coefficient denominator in the affine Celsius-to-Fahrenheit reference.\"\n\n      offset_num int = 32\n        ?descr \"Exact offset numerator in the affine Celsius-to-Fahrenheit reference.\"\n\n      offset_den int = 1\n        ?descr \"Exact offset denominator in the affine Celsius-to-Fahrenheit reference.\"\n\n    addition\n      x float = 10.0\n        ?descr \"First addend nominal value.\"\n\n      sigma_x float = 0.2\n        ?descr \"First addend standard deviation.\"\n\n      y float = 4.0\n        ?descr \"Second addend nominal value.\"\n\n      sigma_y float = 0.3\n        ?descr \"Second addend standard deviation.\"\n\n      unit str = \"m\"\n        ?descr \"Unit shared by the two addends.\"\n\n    product\n      x float = 10.0\n        ?descr \"First factor nominal value.\"\n\n      sigma_x float = 0.2\n        ?descr \"First factor standard deviation.\"\n\n      y float = 4.0\n        ?descr \"Second factor nominal value.\"\n\n      sigma_y float = 0.3\n        ?descr \"Second factor standard deviation.\"\n\n      x_unit str = \"m\"\n        ?descr \"Unit of the first factor.\"\n\n      y_unit str = \"s\"\n        ?descr \"Unit of the second factor.\"\n\n    reciprocal\n      x float = 4.0\n        ?descr \"Denominator nominal value; keep its distribution away from zero.\"\n\n      sigma_x float = 0.1\n        ?descr \"Denominator standard deviation.\"\n\n      unit str = \"s\"\n        ?descr \"Unit of the denominator.\"\n\n  semantics\n    normal_coverage float = 0.95\n      ?descr \"Central Monte Carlo coverage interval requested for the reported propagation interval.\"\n\n    tolerance_relative float = 0.03\n      ?descr \"Relative tolerance for analytic-versus-Monte-Carlo standard deviation checks.\"\n\n  packages\n    snt\n      version str = \"0.9.8\"\n        ?descr \"Pinned SNT3 release whose PUQ uncertainty model is under comparison.\"\n        ?rationale \"Release: https://pypi.org/project/scinumtools3/0.9.8/\"\n\n      website str = \"https://github.com/scinumtools/snt3\"\n        ?descr \"SNT3 source repository and project documentation.\"\n\n      release str = \"https://pypi.org/project/scinumtools3/0.9.8/\"\n\n    pint\n      version str = \"0.26.2\"\n        ?descr \"Pinned Pint release used in the comparison.\"\n        ?rationale \"Release: https://pypi.org/project/Pint/0.26.2/\"\n\n      website str = \"https://pint.readthedocs.io/en/0.26.2/\"\n        ?descr \"Versioned Pint documentation.\"\n\n      release str = \"https://pypi.org/project/Pint/0.26.2/\"\n\n    uncertainties\n      version str = \"3.2.3\"\n        ?descr \"Pinned optional package used by Pint's uncertainty integration.\"\n        ?rationale \"Release: https://pypi.org/project/uncertainties/3.2.3/ (3.2.4 is yanked).\"\n\n      website str = \"https://uncertainties.readthedocs.io/\"\n        ?descr \"uncertainties documentation.\"\n\n      release str = \"https://pypi.org/project/uncertainties/3.2.3/\"\n\n    numpy\n      version str = \"2.5.4\"\n        ?descr \"Pinned random-number and Monte Carlo array package.\"\n        ?rationale \"Release: https://pypi.org/project/numpy/2.5.4/\"\n\n      website str = \"https://numpy.org/\"\n        ?descr \"NumPy project documentation.\"\n\n      release str = \"https://pypi.org/project/numpy/2.5.4/\"\n\n    matplotlib\n      version str = \"3.11.2\"\n        ?descr \"Pinned figure rendering package.\"\n        ?rationale \"Release: https://pypi.org/project/matplotlib/3.11.2/\"\n\n      website str = \"https://matplotlib.org/\"\n        ?descr \"Matplotlib project documentation.\"\n\n      release str = \"https://pypi.org/project/matplotlib/3.11.2/\"\n\n  provenance\n    gum str = \"https://doi.org/10.59161/JCGM100-2008E\"\n\n    gum_amendment_2026 str = \"https://doi.org/10.59161/PPDI3267\"\n\n    monte_carlo str = \"https://doi.org/10.59161/JCGM101-2008\"\n\n    pint_uncertainties str = \"https://pint.readthedocs.io/en/0.26.2/getting/overview.html\"\n\n    uncertainty_model str = \"https://github.com/scinumtools/snt3/blob/ab0597d8c3a304a8282f2098e5af45a67e86ac0d/docs/puel/sections/uncertainty.md\"\n",
+  "platform": "macOS-arm64",
+  "python": "3.13.15",
+  "repository_revision": "98f96aa9657c663ebff569ba9c56140621a337a4",
+  "benchmark_source_sha256": {
+    "run.py": "933829588614f45313148909b0550f231c08e8983fe35b95bd9bb20609c57e68",
+    "benchmark.py": "dac5024ad9c38cc070bc69f4b1f0ad21de13eb04b16b5888997f2b370b0b925a"
+  },
+  "packages": {
+    "snt": {
+      "version": "0.9.8",
+      "website": "https://github.com/scinumtools/snt3",
+      "release": "https://pypi.org/project/scinumtools3/0.9.8/"
+    },
+    "pint": {
+      "version": "0.26.2",
+      "website": "https://pint.readthedocs.io/en/0.26.2/",
+      "release": "https://pypi.org/project/Pint/0.26.2/"
+    },
+    "uncertainties": {
+      "version": "3.2.3",
+      "website": "https://uncertainties.readthedocs.io/",
+      "release": "https://pypi.org/project/uncertainties/3.2.3/"
+    },
+    "numpy": {
+      "version": "2.5.4",
+      "website": "https://numpy.org/",
+      "release": "https://pypi.org/project/numpy/2.5.4/"
+    },
+    "matplotlib": {
+      "version": "3.11.2",
+      "website": "https://matplotlib.org/",
+      "release": "https://pypi.org/project/matplotlib/3.11.2/"
+    }
+  },
+  "provenance": {
+    "gum": "https://doi.org/10.59161/JCGM100-2008E",
+    "gum_amendment_2026": "https://doi.org/10.59161/PPDI3267",
+    "monte_carlo": "https://doi.org/10.59161/JCGM101-2008",
+    "pint_uncertainties": "https://pint.readthedocs.io/en/0.26.2/getting/overview.html",
+    "uncertainty_model": "https://github.com/scinumtools/snt3/blob/ab0597d8c3a304a8282f2098e5af45a67e86ac0d/docs/puel/sections/uncertainty.md"
+  },
+  "effective_settings": {
+    "samples": 200000,
+    "seed": 20261025,
+    "cases": "*",
+    "libraries": [
+      "snt",
+      "pint"
+    ],
+    "coverage": 0.95,
+    "tolerance_relative": 0.03
+  },
+  "command": [
+    "python",
+    "benchmark.py",
+    "--config",
+    "config.dip"
+  ]
+}

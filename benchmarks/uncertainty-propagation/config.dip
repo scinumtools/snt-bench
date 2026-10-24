@@ -1,0 +1,165 @@
+# User-adjustable uncertainty propagation protocol. run.py parses this file as DIPL.
+uncertainty_propagation
+  execution
+    python_base str = "python3.13"
+      ?descr "Interpreter used to create the isolated pinned environment."
+
+    output_dir str = "benchmarks/uncertainty-propagation/results"
+      ?descr "Directory for timestamped result sets, relative to the repository root."
+
+    libraries str[:] = ["snt", "pint"]
+      ?descr "Libraries included in this run; Pint uncertainty support uses the optional uncertainties package."
+
+    samples int = 200000
+      ?descr "Monte Carlo draws per case; increase to reduce sampling noise."
+
+    seed int = 20261025
+      ?descr "Fixed NumPy generator seed for reproducible independent normal inputs."
+
+    figure_dpi int = 160
+      ?descr "Resolution of the summary figure."
+
+  workload
+    selection
+      cases str[:] = ["*"]
+        ?descr "Case ID glob patterns to run."
+
+    # Nominals and standard deviations define independent normal input distributions.
+    linear_conversion
+      nominal float = 20.0
+        ?descr "Nominal temperature in degrees Celsius."
+
+      standard_deviation float = 0.2
+        ?descr "One-standard-deviation input spread in degrees Celsius."
+
+      source_unit str = "degC"
+        ?descr "Input temperature point unit."
+
+      target_unit str = "degF"
+        ?descr "Output temperature point unit."
+
+      scale_num int = 9
+        ?descr "Exact coefficient numerator in the affine Celsius-to-Fahrenheit reference."
+
+      scale_den int = 5
+        ?descr "Exact coefficient denominator in the affine Celsius-to-Fahrenheit reference."
+
+      offset_num int = 32
+        ?descr "Exact offset numerator in the affine Celsius-to-Fahrenheit reference."
+
+      offset_den int = 1
+        ?descr "Exact offset denominator in the affine Celsius-to-Fahrenheit reference."
+
+    addition
+      x float = 10.0
+        ?descr "First addend nominal value."
+
+      sigma_x float = 0.2
+        ?descr "First addend standard deviation."
+
+      y float = 4.0
+        ?descr "Second addend nominal value."
+
+      sigma_y float = 0.3
+        ?descr "Second addend standard deviation."
+
+      unit str = "m"
+        ?descr "Unit shared by the two addends."
+
+    product
+      x float = 10.0
+        ?descr "First factor nominal value."
+
+      sigma_x float = 0.2
+        ?descr "First factor standard deviation."
+
+      y float = 4.0
+        ?descr "Second factor nominal value."
+
+      sigma_y float = 0.3
+        ?descr "Second factor standard deviation."
+
+      x_unit str = "m"
+        ?descr "Unit of the first factor."
+
+      y_unit str = "s"
+        ?descr "Unit of the second factor."
+
+    reciprocal
+      x float = 4.0
+        ?descr "Denominator nominal value; keep its distribution away from zero."
+
+      sigma_x float = 0.1
+        ?descr "Denominator standard deviation."
+
+      unit str = "s"
+        ?descr "Unit of the denominator."
+
+  semantics
+    normal_coverage float = 0.95
+      ?descr "Central Monte Carlo coverage interval requested for the reported propagation interval."
+
+    tolerance_relative float = 0.03
+      ?descr "Relative tolerance for analytic-versus-Monte-Carlo standard deviation checks."
+
+  packages
+    snt
+      version str = "0.9.8"
+        ?descr "Pinned SNT3 release whose PUQ uncertainty model is under comparison."
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.8/"
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 source repository and project documentation."
+
+      release str = "https://pypi.org/project/scinumtools3/0.9.8/"
+
+    pint
+      version str = "0.26.2"
+        ?descr "Pinned Pint release used in the comparison."
+        ?rationale "Release: https://pypi.org/project/Pint/0.26.2/"
+
+      website str = "https://pint.readthedocs.io/en/0.26.2/"
+        ?descr "Versioned Pint documentation."
+
+      release str = "https://pypi.org/project/Pint/0.26.2/"
+
+    uncertainties
+      version str = "3.2.3"
+        ?descr "Pinned optional package used by Pint's uncertainty integration."
+        ?rationale "Release: https://pypi.org/project/uncertainties/3.2.3/ (3.2.4 is yanked)."
+
+      website str = "https://uncertainties.readthedocs.io/"
+        ?descr "uncertainties documentation."
+
+      release str = "https://pypi.org/project/uncertainties/3.2.3/"
+
+    numpy
+      version str = "2.5.4"
+        ?descr "Pinned random-number and Monte Carlo array package."
+        ?rationale "Release: https://pypi.org/project/numpy/2.5.4/"
+
+      website str = "https://numpy.org/"
+        ?descr "NumPy project documentation."
+
+      release str = "https://pypi.org/project/numpy/2.5.4/"
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned figure rendering package."
+        ?rationale "Release: https://pypi.org/project/matplotlib/3.11.2/"
+
+      website str = "https://matplotlib.org/"
+        ?descr "Matplotlib project documentation."
+
+      release str = "https://pypi.org/project/matplotlib/3.11.2/"
+
+  provenance
+    gum str = "https://doi.org/10.59161/JCGM100-2008E"
+
+    gum_amendment_2026 str = "https://doi.org/10.59161/PPDI3267"
+
+    monte_carlo str = "https://doi.org/10.59161/JCGM101-2008"
+
+    pint_uncertainties str = "https://pint.readthedocs.io/en/0.26.2/getting/overview.html"
+
+    uncertainty_model str = "https://github.com/scinumtools/snt3/blob/ab0597d8c3a304a8282f2098e5af45a67e86ac0d/docs/puel/sections/uncertainty.md"
