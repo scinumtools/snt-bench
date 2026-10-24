@@ -1,0 +1,21 @@
+schemas[]
+  name = "runconfig"
+  file = "schema.dip"
+
+code[]
+  file = "invalid--missing-required.dip"
+
+code[]
+  file = "invalid--wrong-type.dip"
+
+code[]
+  file = "invalid--enum.dip"
+
+code[]
+  file = "invalid--range.dip"
+
+code[]
+  file = "invalid--pattern.dip"
+
+code[]
+  file = "invalid--nested-bound.dip"

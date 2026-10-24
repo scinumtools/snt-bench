@@ -1,4 +1,4 @@
-simulation : runconfig
+simulation_valid_steady : runconfig
   name = "run-01"
   mode = "steady"
   steps = 1

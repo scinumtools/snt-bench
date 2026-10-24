@@ -1,4 +1,4 @@
-simulation : runconfig
+simulation_valid_transient : runconfig
   name = "run-02"
   mode = "transient"
   steps = 20

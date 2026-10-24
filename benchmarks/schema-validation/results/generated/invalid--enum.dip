@@ -1,4 +1,4 @@
-simulation : runconfig
+simulation_invalid_enum : runconfig
   name = "run-01"
   mode = "adaptive"
   steps = 1

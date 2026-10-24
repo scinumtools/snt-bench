@@ -1,4 +1,4 @@
-simulation : runconfig
+simulation_invalid_missing_required : runconfig
   mode = "steady"
   steps = 1
   grid

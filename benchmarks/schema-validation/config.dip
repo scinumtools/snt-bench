@@ -43,11 +43,11 @@ schema_validation
 
   timing
     quick
-      samples int = 5
-        ?descr "Timed process invocations for each participant and fixture."
+      samples int = 20
+        ?descr "Timed batch invocations per participant and fixture class."
 
-      warmups int = 1
-        ?descr "Untimed process invocations before collecting quick samples."
+      warmups int = 3
+        ?descr "Untimed batch invocations before collecting quick samples."
 
   packages
     scinumtools3

@@ -30,8 +30,8 @@ The method follows the equivalent-structure and equality-check pattern in [Canop
 
 ## Schema and configuration validation
 
-Feature support and command-line validation timing comparison for DIPL, JSON Schema, CUE, and Pkl, with each capability linked to primary project documentation. All four participants pass the shared eight-case correctness check; the figure shows preliminary three-sample medians.
+Feature support and command-line validation timing comparison for DIPL, JSON Schema, CUE, and Pkl, with each capability linked to primary project documentation. All four participants pass the shared eight-case correctness check; the figure compares same-size-per-class native CLI batches over 20 repetitions.
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 
-![Preliminary schema validation CLI timings for DIPL, JSON Schema, CUE, and Pkl](benchmarks/schema-validation/results/schema_validation_20261024T204909Z.png)
+![Schema validation native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](benchmarks/schema-validation/results/schema_validation_20261024T205728Z.png)

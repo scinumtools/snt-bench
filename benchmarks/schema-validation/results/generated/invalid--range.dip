@@ -1,4 +1,4 @@
-simulation : runconfig
+simulation_invalid_range : runconfig
   name = "run-01"
   mode = "transient"
   steps = 10001

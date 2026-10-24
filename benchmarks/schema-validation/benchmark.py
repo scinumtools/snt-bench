@@ -61,8 +61,8 @@ def json_scalar(value):
     return json.dumps(value, ensure_ascii=False, allow_nan=False)
 
 
-def dipl_document(data):
-    lines = ["simulation : runconfig"]
+def dipl_document(data, root="simulation"):
+    lines = [f"{root} : runconfig"]
     for field in ("name", "mode"):
         if field in data:
             lines.append(f"  {field} = {json_scalar(data[field])}")
@@ -110,7 +110,8 @@ def prepare_fixtures(cases, paths):
         item["dipl_project"] = paths["generated"] / f"{stem}.DIPfile"
         item["pkl_path"] = paths["generated"] / f"{stem}.pkl"
         item["data_path"].write_text(json.dumps(item["data"], indent=2) + "\n", encoding="utf-8")
-        item["dipl_path"].write_text(dipl_document(item["data"]), encoding="utf-8")
+        group_name = "simulation_" + re.sub(r"[^a-zA-Z0-9_]", "_", item["id"])
+        item["dipl_path"].write_text(dipl_document(item["data"], group_name), encoding="utf-8")
         project = ("schemas[]\n"
                    '  name = "runconfig"\n'
                    '  file = "schema.dip"\n\n'
@@ -178,6 +179,30 @@ def command_for(participant, item, paths, get):
     raise ValueError(participant)
 
 
+def batch_command_for(participant, items, paths, get):
+    """Validate one class batch in a single native CLI process."""
+    if participant == "dipl":
+        batch_project = paths["generated"] / f"batch-{items[0]['valid']}.DIPfile"
+        lines = ["schemas[]", '  name = "runconfig"', '  file = "schema.dip"']
+        for item in items:
+            lines.extend(["", "code[]", f'  file = "{item["dipl_path"].name}"'])
+        batch_project.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return [str(get("workload.snt_command")), "validate", "--project", str(batch_project)]
+    if participant == "jsonschema":
+        command = [sys.executable, str(HERE / "validate_python.py"), "jsonschema",
+                   "--schema", str(paths["json_schema"])]
+        for item in items:
+            command.extend(("--data", str(item["data_path"])))
+        return command
+    if participant == "cue":
+        return [str(get("workload.cue_command")), "vet", "-c", "-d", "#Config",
+                str(paths["cue_schema"]), *(str(item["data_path"]) for item in items)]
+    if participant == "pkl":
+        return [str(get("workload.pkl_command")), "eval",
+                *(str(item["pkl_path"]) for item in items)]
+    raise ValueError(participant)
+
+
 def run_once(command, expected_valid):
     result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     observed_valid = result.returncode == 0
@@ -201,17 +226,29 @@ def draw_figure(summary, output, dpi):
     positions = list(range(len(participants)))
     for offset, validity in enumerate(classes):
         medians = []
+        lower = []
+        upper = []
         for participant in participants:
             row = next((row for row in summary
                         if row["participant"] == participant and row["case_class"] == validity), None)
-            medians.append(float(row["median_ms"]) if row else float("nan"))
+            medians.append(float(row["median_batch_ms"]) if row else float("nan"))
+            lower.append(float(row["min_batch_ms"]) if row else float("nan"))
+            upper.append(float(row["max_batch_ms"]) if row else float("nan"))
         x = [position + (offset - 0.5) * width for position in positions]
-        ax.bar(x, medians, width=width, label=f"{validity.title()} fixtures", color="#0072B2" if offset == 0 else "#D55E00")
-    ax.set_xticks(positions, [row for row in participants])
-    ax.set_yscale("log")
-    ax.set_ylabel("Median end-to-end time per validation (ms)")
-    ax.set_title("Schema/config validation command latency")
-    ax.grid(axis="y", which="both", color="#c8cdd3", linewidth=0.6, alpha=0.7)
+        fixture_count = next((row["fixture_count"] for row in summary
+                              if row["case_class"] == validity), 0)
+        ax.bar(x, medians, width=width, label=f"{validity.title()} set (n={fixture_count})",
+               color="#0072B2" if offset == 0 else "#D55E00",
+               yerr=[[median - low for median, low in zip(medians, lower)],
+                     [high - median for median, high in zip(medians, upper)]],
+               capsize=3, error_kw={"linewidth": 0.8})
+    labels = [f"{row['participant']}\n{row['participant_version']}" for row in
+              [next(item for item in summary if item["participant"] == participant)
+               for participant in participants]]
+    ax.set_xticks(positions, labels)
+    ax.set_ylabel("Median time for one CLI batch (ms)")
+    ax.set_title("Schema/config validation: same-case native CLI batches")
+    ax.grid(axis="y", color="#c8cdd3", linewidth=0.6, alpha=0.7)
     ax.legend(frameon=False)
     fig.savefig(output, dpi=dpi, bbox_inches="tight")
     plt.close(fig)
@@ -275,27 +312,31 @@ def main():
 
     samples_rows = []
     for participant in participants:
-        for item in cases:
-            command = commands[(participant, item["id"])]
+        for case_class, expected_valid in (("valid", True), ("invalid", False)):
+            batch = [item for item in cases if bool(item["valid"]) == expected_valid]
+            if not batch:
+                continue
+            command = batch_command_for(participant, batch, paths, get)
             for _ in range(warmups):
-                observed, _error = run_once(command, item["valid"])
-                if observed != bool(item["valid"]):
-                    raise SystemExit(f"Warmup failed after parity check: {participant} {item['id']}")
+                observed, error = run_once(command, expected_valid)
+                if observed != expected_valid:
+                    raise SystemExit(f"Batch warmup failed: {participant} {case_class}: {error}")
             for sample in range(samples):
                 start = time.perf_counter_ns()
-                observed, error = run_once(command, item["valid"])
+                observed, error = run_once(command, expected_valid)
                 elapsed_ns = time.perf_counter_ns() - start
-                if observed != bool(item["valid"]):
-                    raise SystemExit(f"Validation changed during timing: {participant} {item['id']} {error}")
+                if observed != expected_valid:
+                    raise SystemExit(f"Batch validation changed during timing: {participant} {case_class}: {error}")
                 samples_rows.append({
                     "run_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "participant": participant,
                     "participant_version": versions[participant],
-                    "case_id": item["id"],
-                    "case_class": "valid" if item["valid"] else "invalid",
+                    "case_class": case_class,
+                    "fixture_count": len(batch),
                     "sample": sample + 1,
-                    "elapsed_ns": elapsed_ns,
-                    "elapsed_ms": elapsed_ns / 1e6,
+                    "batch_elapsed_ns": elapsed_ns,
+                    "batch_elapsed_ms": elapsed_ns / 1e6,
+                    "ms_per_document": elapsed_ns / 1e6 / len(batch),
                     "platform": platform.platform(),
                     "python_version": platform.python_version(),
                 })
@@ -303,19 +344,24 @@ def main():
     summary = []
     for participant in participants:
         for case_class in ("valid", "invalid"):
-            values = [float(row["elapsed_ms"]) for row in samples_rows
+            values = [float(row["ms_per_document"]) for row in samples_rows
                       if row["participant"] == participant and row["case_class"] == case_class]
-            if values:
+            batch_values = [float(row["batch_elapsed_ms"]) for row in samples_rows
+                            if row["participant"] == participant and row["case_class"] == case_class]
+            if values and batch_values:
                 summary.append({
                     "participant": participant,
                     "participant_version": versions[participant],
                     "case_class": case_class,
-                    "fixture_count": len({row["case_id"] for row in samples_rows
-                                           if row["participant"] == participant and row["case_class"] == case_class}),
-                    "samples_per_fixture": samples,
-                    "median_ms": statistics.median(values),
-                    "min_ms": min(values),
-                    "max_ms": max(values),
+                    "fixture_count": next(row["fixture_count"] for row in samples_rows
+                                           if row["participant"] == participant and row["case_class"] == case_class),
+                    "samples_per_batch": samples,
+                    "median_batch_ms": statistics.median(batch_values),
+                    "min_batch_ms": min(batch_values),
+                    "max_batch_ms": max(batch_values),
+                    "median_ms_per_document": statistics.median(values),
+                    "min_ms_per_document": min(values),
+                    "max_ms_per_document": max(values),
                 })
     samples_path = output_dir / f"{prefix}_samples.csv"
     summary_path = output_dir / f"{prefix}_summary.csv"
@@ -340,7 +386,7 @@ def main():
     print(f"Figure:  {figure_path}")
     for row in summary:
         print(f"{row['participant']} {row['participant_version']} {row['case_class']}: "
-              f"median {row['median_ms']:.3f} ms across {row['fixture_count']} fixtures")
+              f"median {row['median_batch_ms']:.3f} ms for a {row['fixture_count']}-document batch")
 
 
 if __name__ == "__main__":

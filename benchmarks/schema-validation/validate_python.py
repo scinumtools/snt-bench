@@ -10,17 +10,17 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("participant", choices=("jsonschema",))
     parser.add_argument("--schema", required=True, type=Path)
-    parser.add_argument("--data", required=True, type=Path)
+    parser.add_argument("--data", required=True, type=Path, action="append")
     args = parser.parse_args()
 
     from jsonschema import Draft202012Validator
 
     schema = json.loads(args.schema.read_text(encoding="utf-8"))
-    data = json.loads(args.data.read_text(encoding="utf-8"))
-    valid = Draft202012Validator(schema).is_valid(data)
-
-    print("valid" if valid else "invalid")
-    return 0 if valid else 1
+    validator = Draft202012Validator(schema)
+    validity = [validator.is_valid(json.loads(path.read_text(encoding="utf-8")))
+                for path in args.data]
+    print(f"validated {len(validity)} documents")
+    return 0 if all(validity) else 1
 
 
 if __name__ == "__main__":
