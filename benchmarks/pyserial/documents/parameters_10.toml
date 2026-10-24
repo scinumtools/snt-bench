@@ -1,0 +1,17 @@
+[experiment]
+name = "serialization benchmark"
+enabled = true
+iterations = 1000
+timestep = 0.00025
+
+[experiment.parameters]
+p00000 = 0.0
+p00001 = 0.1
+p00002 = 0.2
+p00003 = 0.3
+p00004 = 0.4
+p00005 = 0.5
+p00006 = 0.6
+p00007 = 0.7
+p00008 = 0.8
+p00009 = 0.9

@@ -1,0 +1,119 @@
+# Controls for the Python configuration-parsing comparison.
+# Parser algorithms and equivalent document structure are fixed by benchmark.py.
+pyserial
+  execution
+    environment
+      python_base str = "python3.13"
+        ?descr "Interpreter used to create the pinned benchmark environment."
+
+    selection
+      formats str[:] = ["json", "yaml", "toml", "dipl"]
+        ?descr "Python parser implementations to run; all selected formats represent the same values."
+
+      parameter_counts int[:] = [10, 100, 1000, 10000]
+        ?descr "Numbers of named float parameters in the generated experiment mapping."
+
+    outputs
+      results_dir str = "benchmarks/pyserial/results"
+        ?descr "Directory for timestamped CSV, figure, and configuration snapshot."
+
+      documents_dir str = "benchmarks/pyserial/documents"
+        ?descr "Directory for the smallest generated document in each selected format."
+
+      export_smallest bool = true
+        ?descr "Write the smallest workload document for each selected format."
+
+      figure_dpi int = 300
+        ?descr "Resolution of the saved comparison figure."
+
+  workload
+    experiment
+      name str = "serialization benchmark"
+        ?descr "String value in the common experiment mapping."
+
+      enabled bool = true
+        ?descr "Boolean value in the common experiment mapping."
+
+      iterations int = 1000
+        ?descr "Integer value in the common experiment mapping; it is parsed, not executed."
+
+      timestep float = 0.00025
+        ?descr "Float value in the common experiment mapping."
+
+    parameters
+      name_prefix str = "p"
+        ?descr "Prefix of generated float parameter names; must form valid DIPL identifiers."
+
+      name_min_digits int = 5
+        ?descr "Minimum zero-padded width of the generated parameter index."
+
+      value_period int = 1000
+        ?descr "Modulo period used to generate repeatable parameter values."
+
+      value_divisor float = 10.0
+        ?descr "Divisor used to generate repeatable parameter values."
+
+  timing
+    quick
+      samples int = 5
+        ?descr "Timed samples for each parser and document size."
+
+      warmups int = 2
+        ?descr "Untimed decode calls before loop calibration."
+
+      target_ms float = 10.0
+        ?descr "Target duration of each sample when calibrating decode loops."
+
+      max_loops int = 10000000
+        ?descr "Maximum decode calls per timed sample."
+
+  packages
+    scinumtools3
+      version str = "0.9.8"
+        ?descr "Pinned SNT3 release providing the DIPL parser."
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.8/"
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 project home."
+
+    pyyaml
+      version str = "6.0.3"
+        ?descr "Pinned PyYAML release providing the YAML safe loader."
+        ?rationale "Release: https://pypi.org/project/PyYAML/6.0.3/"
+
+      website str = "https://pyyaml.org/"
+        ?descr "PyYAML project home."
+
+    numpy
+      version str = "2.5.4"
+        ?descr "Pinned NumPy version used by the benchmark environment."
+        ?rationale "Release: https://pypi.org/project/numpy/2.5.4/"
+
+      website str = "https://numpy.org/"
+        ?descr "NumPy project home."
+
+    pandas
+      version str = "3.1.0"
+        ?descr "Pinned pandas version used for the console result table."
+        ?rationale "Release: https://pypi.org/project/pandas/3.1.0/"
+
+      website str = "https://pandas.pydata.org/"
+        ?descr "pandas project home."
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned Matplotlib version used to render the figure."
+        ?rationale "Release: https://pypi.org/project/matplotlib/3.11.2/"
+
+      website str = "https://matplotlib.org/"
+        ?descr "Matplotlib project home."
+
+  provenance
+    method_website str = "https://github.com/Canop/bench-config-deserializers"
+      ?descr "Example of comparing configuration decoders with an equivalent nested structure."
+
+    json_website str = "https://docs.python.org/3.13/library/json.html"
+      ?descr "Python standard-library JSON parser documentation."
+
+    tomllib_website str = "https://docs.python.org/3.13/library/tomllib.html"
+      ?descr "Python standard-library TOML parser documentation."

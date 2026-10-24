@@ -217,6 +217,14 @@ benchmarks/pyunits/results/*
 !benchmarks/pyunits/results/reference-quick.config.json
 !benchmarks/pyunits/results/reference-quick.png
 
+# Parsing comparison environments and generated runs.
+benchmarks/pyserial/.venv-*/
+benchmarks/pyserial/results/*
+!benchmarks/pyserial/results/README.md
+!benchmarks/pyserial/results/reference-quick.csv
+!benchmarks/pyserial/results/reference-quick.config.json
+!benchmarks/pyserial/results/reference-quick.png
+
 # PyPI configuration file
 .pypirc
 
