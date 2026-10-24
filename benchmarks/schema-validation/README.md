@@ -30,15 +30,15 @@ The full comparison also requires the CUE `0.17.1` and Pkl `0.32.2` command-line
 
 The fixture corpus has eight cases: two valid configurations and six invalid ones covering missing required fields, wrong types, enum restrictions, numeric bounds, a string pattern, and a nested bound. Cross-field constraints remain documented in the feature matrix, but are not timed until their semantics can be represented consistently across all participants. The runner writes generated participant inputs, an acceptance matrix, per-sample and summary CSVs, a figure, and an effective configuration snapshot under `results/`. Timings are collected only if every selected participant agrees with every expected result.
 
-## Initial results
+## Results
 
-[Correctness matrix (all four participants)](results/schema_validation_20261024T203750Z_correctness.csv) · [Timing summary](results/schema_validation_20261024T203709Z_summary.csv) · [Per-sample timings](results/schema_validation_20261024T203709Z_samples.csv) · [Effective configuration](results/schema_validation_20261024T203709Z.config.json)
+[Correctness matrix](results/schema_validation_20261024T204909Z_correctness.csv) · [Timing summary](results/schema_validation_20261024T204909Z_summary.csv) · [Per-sample timings](results/schema_validation_20261024T204909Z_samples.csv) · [Effective configuration](results/schema_validation_20261024T204909Z.config.json)
 
-![Initial command-line validation timings for DIPL and JSON Schema](results/schema_validation_20261024T203709Z.png)
+![Preliminary command-line validation timings for DIPL, JSON Schema, CUE, and Pkl](results/schema_validation_20261024T204909Z.png)
 
-This is an exploratory run with one sample per fixture, so the medians are preliminary. DIPL 0.9.8 and JSON Schema (`jsonschema` 4.26.0) agreed with all eight expected outcomes. Pkl 0.32.2 also agreed with all eight, but was not timed because the runner requires every participant to pass parity before timing. CUE 0.17.1 correctly rejected all six invalid fixtures but also rejected both valid fixtures because the current CUE schema treats their fields as undeclared. The figure therefore shows DIPL and JSON Schema only; it should not be read as a complete four-way performance comparison.
+This run uses three samples per fixture. DIPL 0.9.8, JSON Schema (`jsonschema` 4.26.0), CUE 0.17.1, and Pkl 0.32.2 all matched the expected outcomes for all eight cases, so the figure includes all four participants. Median command-line times were 14.9 ms (DIPL), 79.5 ms (JSON Schema), 10.9 ms (CUE), and 13.1 ms (Pkl) for valid fixtures; for invalid fixtures they were 15.0 ms, 77.4 ms, 10.9 ms, and 17.1 ms, respectively.
 
-For the measured CLI paths, median validation times were about 14 ms for DIPL and 76–77 ms for JSON Schema, with valid and invalid fixtures summarized separately. These include process startup and file reading, and this one-sample run does not support a robust performance ranking. The CUE valid-input mismatch must be resolved and the comparison rerun with more samples before drawing broader conclusions.
+These are preliminary measurements: three samples per fixture are too few for a stable performance ranking. Each result includes process startup and file reading, so it compares the complete one-shot CLI workflows rather than isolating validator execution. JSON Schema's Python process startup dominates this measurement; the figures should not be interpreted as a pure validator speed comparison. More samples and repeated runs on a controlled runner are needed for stronger conclusions.
 
 ## Measurement and interpretation
 

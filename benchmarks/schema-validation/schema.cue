@@ -1,4 +1,4 @@
-#Config: close({
+#Config: {
 	name: =~"^[a-z][a-z0-9-]{2,31}$"
 	mode: "steady" | "transient"
 	steps: int & >=1 & <=10000
@@ -10,4 +10,4 @@
 	if mode == "steady" {
 		steps: 1
 	}
-})
+}
