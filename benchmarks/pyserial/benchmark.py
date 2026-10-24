@@ -9,6 +9,7 @@ from pathlib import Path
 import platform
 import re
 import statistics
+import sys
 import tempfile
 import time
 import tomllib
@@ -22,6 +23,10 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+
+REPO_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_DIR / "benchmarks"))
+from result_metadata import platform_label
 import yaml
 from plot_results import plot as plot_parsing_results
 
@@ -243,7 +248,7 @@ def main():
                 "target_ms": args.target_ms,
                 "python_version": platform.python_version(),
                 "implementation": platform.python_implementation(),
-                "platform": platform.platform(),
+                "platform": platform_label(),
                 "json_parser": f"stdlib/{platform.python_version()}",
                 "yaml_parser": f"PyYAML/{yaml.__version__}",
                 "toml_parser": f"tomllib/{platform.python_version()}",

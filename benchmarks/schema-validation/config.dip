@@ -28,8 +28,11 @@ schema_validation
       participants str[:] = ["dipl", "jsonschema", "cue", "pkl"]
         ?descr "Participants to validate and time; CLI flags can select a subset."
 
+      inprocess_participants str[:] = ["dipl", "jsonschema"]
+        ?descr "Python API participants for the in-process comparison; CUE and Pkl use separate runtimes."
+
       case_ids str[:] = ["*"]
-        ?descr "Fixture ID globs to select; all fixtures run by default."
+        ?descr "Fixture ID globs to select (valid/<name> or invalid/<check>); all fixtures run by default."
 
   workload
     snt_command str = "snt"
@@ -48,6 +51,13 @@ schema_validation
 
       warmups int = 3
         ?descr "Untimed batch invocations before collecting quick samples."
+
+    inprocess
+      samples int = 100
+        ?descr "Timed in-process batch calls per Python API and fixture class."
+
+      warmups int = 10
+        ?descr "Untimed in-process batch calls before collecting samples."
 
   packages
     scinumtools3

@@ -23,6 +23,10 @@ import unyt as uy
 
 from benchmark_config import DEFAULT_CONFIG, as_list, source_settings
 
+REPO_DIR = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_DIR / "benchmarks"))
+from result_metadata import path_label, platform_label
+
 
 pre_parser = argparse.ArgumentParser(add_help=False)
 pre_parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
@@ -444,9 +448,10 @@ for case_index, case in enumerate(selected_cases):
             "scinumtools3_version": SNT_VERSION, "numpy_version": LIBRARY_VERSIONS["numpy"],
             "snt_source": SNT_SOURCE, "snt_git_commit": SNT_GIT_COMMIT,
             "snt_git_dirty": SNT_GIT_DIRTY,
-            "python_version": platform.python_version(), "python_executable": sys.executable,
-            "platform": platform.platform(), "architecture": platform.machine(),
-            "snt_package_path": str(installed_init),
+            "python_version": platform.python_version(),
+            "python_executable": path_label(sys.executable, REPO_DIR),
+            "platform": platform_label(), "architecture": platform.machine(),
+            "snt_package_path": path_label(installed_init, REPO_DIR),
             "measurement_method": "quick" if args.quick else "pyperf",
             "pyperf_version": None if args.quick else pyperf.__version__,
             "processes": 1 if args.quick else args.processes,

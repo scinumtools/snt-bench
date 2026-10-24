@@ -28,7 +28,20 @@ Install the pinned Python packages into the isolated environment with:
 
 The full comparison also requires the CUE `0.17.1` and Pkl `0.32.2` command-line tools on `PATH`. To run only the Python participants while setting up those tools, use `--participant dipl --participant jsonschema`. `--samples N` changes the number of timed batch invocations; `config.dip` controls the default participants, fixture selection, sample count, warmups, package pins, and output paths.
 
-The fixture corpus has eight cases: two valid configurations and six invalid ones covering missing required fields, wrong types, enum restrictions, numeric bounds, a string pattern, and a nested bound. Cross-field constraints remain documented in the feature matrix, but are not timed until their semantics can be represented consistently across all participants. The runner writes generated participant inputs, an acceptance matrix, per-sample and summary CSVs, a figure, and an effective configuration snapshot under `results/`. Timings are collected only if every selected participant agrees with every expected result.
+The fixture corpus has eight cases. Each case has an ID used in the correctness matrix and in `execution.selection.case_ids`; the prefix (`valid/` or `invalid/`) states its expected outcome, and the suffix names the condition being checked:
+
+| Case ID | Expected | What it checks |
+|---|---:|---|
+| `valid/steady` | Accept | Complete configuration with `mode=steady` and `steps=1`. |
+| `valid/transient` | Accept | Complete configuration with `mode=transient` and multiple steps. |
+| `invalid/missing-required` | Reject | The required `name` field is absent. |
+| `invalid/wrong-type` | Reject | Nested `grid.nx` is a string instead of an integer. |
+| `invalid/enum` | Reject | `mode` is outside the allowed `steady` and `transient` values. |
+| `invalid/range` | Reject | `steps` exceeds its maximum value of 10,000. |
+| `invalid/pattern` | Reject | `name` violates the lowercase identifier pattern. |
+| `invalid/nested-bound` | Reject | Nested `grid.nx` is zero, but must be positive. |
+
+For example, `case_ids = ["invalid/*"]` selects all six rejection cases, while `case_ids = ["valid/steady"]` selects just one. Cross-field constraints remain documented in the feature matrix, but are not timed until their semantics can be represented consistently across all participants. The runner writes generated participant inputs, an acceptance matrix, per-sample and summary CSVs, a figure, and an effective configuration snapshot under `results/`; automatic retention keeps the newest ten timestamped result sets. Saved metadata keeps Python/package versions and OS family/CPU architecture while omitting hostnames, home-directory paths, and detailed OS build identifiers. Timings are collected only if every selected participant agrees with every expected result.
 
 ## Results
 
@@ -40,9 +53,17 @@ The correctness matrix runs each of the eight cases separately; all four partici
 
 Median batch times were 15.1 ms (DIPL), 76.6 ms (JSON Schema), 10.2 ms (CUE), and 12.0 ms (Pkl) for valid inputs; for invalid inputs they were 16.7 ms, 75.7 ms, 10.3 ms, and 12.7 ms, respectively. This is a more comparable measure of the complete CLI task: every tool validates the same documents, in one process per batch, with one startup cost per batch. It still measures each tool's runtime and CLI integration along with validation. In particular, JSON Schema's Python interpreter startup remains in the time, so these numbers do not establish that its validator is intrinsically slower. Treat this as a local end-to-end CLI comparison; repeated CI runs on a fixed runner are needed before making broad speed claims.
 
+### In-process Python API results
+
+[Correctness matrix](results/schema_validation_inprocess_20261024T214140Z_correctness.csv) · [Timing summary](results/schema_validation_inprocess_20261024T214140Z_summary.csv) · [Per-sample timings](results/schema_validation_inprocess_20261024T214140Z_samples.csv) · [Effective configuration](results/schema_validation_inprocess_20261024T214140Z.config.json)
+
+![In-process Python API batch timings for DIPL and JSON Schema](results/schema_validation_inprocess_20261024T214140Z.png)
+
+This measurement compares only DIPL and JSON Schema, the participants with Python APIs. Both passed the same eight individual correctness cases. Each timed batch call creates the validator/parser and handles the same two valid or six invalid documents; the 10 warmups and 100 measured calls are controlled by `timing.inprocess` in [`config.dip`](config.dip). Python process startup and imports are outside the timed call, but schema setup, file reads, parsing, and validation are included. Medians were 0.889 ms (DIPL) and 0.144 ms (JSON Schema) for valid batches, and 1.371 ms and 0.260 ms, respectively, for invalid batches. This explains why the CLI chart makes JSON Schema appear much slower: most of its measured CLI time is interpreter and command startup. The in-process values are not a pure validator comparison because the APIs take different native inputs and perform different setup and parsing work. CUE and Pkl are omitted because they use separate runtimes; this method does not imply a ranking across all four tools.
+
 ## Measurement and interpretation
 
-Each timed operation starts one fresh process for a batch of either all valid or all invalid fixture files. This amortizes process startup over multiple documents and keeps the command count and document set identical across participants within each fixture class. Inputs use each tool's native format, and timing includes process startup, file reads, schema loading, validation, and diagnostic generation. This is an end-to-end CLI workload benchmark, not an in-process validator microbenchmark. The valid batch contains two documents and the invalid batch contains six; compare participant timings within a batch class rather than comparing valid and invalid bar heights directly.
+For the CLI method, each timed operation starts one fresh process for a batch of either all valid or all invalid fixture files. This amortizes process startup over multiple documents and keeps the command count and document set identical across participants within each fixture class. Inputs use each tool's native format, and timing includes process startup, file reads, schema loading, validation, and diagnostic generation. For the separate in-process method, the timed call invokes the DIPL and JSON Schema Python APIs directly, without starting another process. The valid batch contains two documents and the invalid batch contains six; compare participant timings within a method and fixture class rather than comparing valid and invalid bar heights directly.
 
 The shared cases measure overlapping structural and constraint features. DIPL-only capabilities such as dimensional unit validation are intentionally outside the shared timing set. The feature matrix documents broader package capabilities, while the fixture acceptance matrix verifies only these eight concrete cases. A JSON Schema conformance suite is not used to grade CUE, Pkl, or DIPL.
 

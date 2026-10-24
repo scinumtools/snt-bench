@@ -15,6 +15,10 @@ from benchmark_config import as_list, literal_string, pinned_snt_version
 
 BENCH_DIR = Path(__file__).resolve().parent
 REPO_DIR = BENCH_DIR.parents[1]
+sys.path.insert(0, str(REPO_DIR / "benchmarks"))
+from result_retention import prune_old_results
+from result_metadata import command_labels, path_label, sanitize_result_metadata
+
 DIST_NAMES = {"snt": "scinumtools3"}
 
 
@@ -216,16 +220,17 @@ def main():
     subprocess.run([python_bin, str(BENCH_DIR / "plot_results.py"), "--input", str(csv_output),
                     "--output", str(figure)], check=True, env=env)
     snapshot = {
-        "config_path": str(config_path),
+        "config_path": path_label(config_path, REPO_DIR),
         "config_sha256": hashlib.sha256(config_text.encode()).hexdigest(),
         "settings": settings, "projects": projects,
         "provenance": {"reference_revision": get("provenance.reference_revision"),
                        "reference_repository": get("provenance.reference_repository")},
-        "command": cmd, "python": python_bin,
+        "command": command_labels(cmd, REPO_DIR),
+        "python": path_label(python_bin, REPO_DIR),
     }
     import scinumtools3
     snapshot["actual_snt"] = {"version": scinumtools3.__version__,
-                              "package_path": str(Path(scinumtools3.__file__).resolve())}
+                              "package_path": path_label(scinumtools3.__file__, REPO_DIR)}
     if source == "local":
         snapshot["actual_snt"]["git_commit"] = subprocess.check_output(
             ["git", "-C", str(local_repo), "rev-parse", "HEAD"], text=True).strip()
@@ -233,6 +238,10 @@ def main():
             ["git", "-C", str(local_repo), "status", "--porcelain"], text=True).strip())
     base.with_suffix(".config.json").write_text(json.dumps(snapshot, indent=2) + "\n")
     print(f"Results: {csv_output}\nFigure: {figure}\nConfiguration: {base.with_suffix('.config.json')}")
+    sanitize_result_metadata(results_dir, REPO_DIR)
+    removed = prune_old_results(results_dir)
+    if removed:
+        print(f"Pruned {len(removed)} files from result sets older than the newest 10.")
 
 
 if __name__ == "__main__":

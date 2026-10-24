@@ -22,6 +22,36 @@ Edit [config.dip](config.dip) to change the source, timing mode, array sizes, se
 
 `compare.py` and `matrix.py` also read their defaults from the selected DIP file when invoked directly with `--config PATH`. Their command-line values override the DIP. The memory probe receives the matrix input range explicitly.
 
+## Case IDs
+
+The operation matrix case ID has four slash-separated parts:
+
+```text
+group/operation/input_kind/elements
+```
+
+`group` names the kind of work, `operation` names the specific operation, `input_kind` says whether the input is a scalar, Python list, or NumPy array, and `elements` is the number of values. Scalar cases always use `1`; array sizes come from `execution.selection.sizes` in [`config.dip`](config.dip). For example, `conversion/compound/ndarray/1000` converts a 1,000-element quantity from metres per second to kilometres per hour. `--list-cases` prints the IDs generated for the current configured sizes, and `--case` accepts shell-style glob patterns over the full ID (for example, `arithmetic/*/scalar/1`).
+
+| `group` | `operation` values | What the operation does |
+|---|---|---|
+| `construction` | `attach_units` | Construct a quantity in metres from a scalar, Python list, or NumPy array. |
+| `conversion` | `same` | Convert metres to metres. |
+|  | `scaled` | Convert metres to millimetres. |
+|  | `compound` | Convert metres per second to kilometres per hour. |
+|  | `temperature` | Convert degrees Celsius to kelvin, using temperature-aware conversion where required. |
+| `arithmetic` | `add_equal` | Add two metre quantities. |
+|  | `add_compatible` | Add metres to an equivalent quantity in centimetres. |
+|  | `subtract_equal` | Subtract one metre quantity from another. |
+|  | `multiply` | Multiply metres by seconds, producing metre-seconds. |
+|  | `divide` | Divide metres by seconds, producing metres per second. |
+|  | `square` | Multiply a metre quantity by itself, producing square metres. |
+|  | `sqrt` | Take the square root of a square-metre quantity, producing metres. |
+| `numpy` | `np_add` | Add two metre quantities with `numpy.add`. |
+|  | `np_sqrt` | Take the square root of a square-metre quantity with `numpy.sqrt`. |
+|  | `np_sum` | Sum an array of metre quantities with `numpy.sum`. |
+
+`input_kind` is `scalar` for one value; `list` is used only for list-based construction; `ndarray` is used for array construction, conversions, arithmetic, and NumPy operations. The separate `pyunits-basic` run is a macro workload rather than an operation-matrix case list: its records use `scalar/add_and_convert` (repeatedly add metre and US-foot quantities, then convert to US inches) and `array/construct_and_convert` (construct an array quantity in metres and convert it to millimetres).
+
 ## Feature support and benchmark coverage
 
 This matrix follows the feature-comparison style of [SocialCompare's Python units table](https://socialcompare.com/en/comparison/python-units-quantities-packages), but records pinned releases and links to project documentation instead of time-varying popularity statistics. `✓` means the capability is described in the linked docs; `◐` means it depends on an optional integration or has a narrower/different meaning; `—` means the feature is unavailable in the compared API or the package documents a different model; `?` means I did not verify it in the cited docs. A `?` is not a claim that a feature is impossible. The SNT wheel is pinned at 0.9.8; because PUEL specifications are not versioned with that wheel, SNT links point to the immutable source snapshot [`ab0597d`](https://github.com/scinumtools/snt3/tree/ab0597d8c3a304a8282f2098e5af45a67e86ac0d). The other documentation links use the pinned versions from [`config.dip`](config.dip) where available.
@@ -66,6 +96,6 @@ Every matrix case has an equivalent plain NumPy operation as an unranked numeric
 
 Quick mode uses one process, configurable warmups and timed samples, and a short loop calibrated toward `quick.target_seconds`. It is useful for development feedback. Pyperf mode uses configurable worker processes, values, warmups, and minimum sample time. It stores raw `.pyperf.json`, a summary CSV, and a `_samples.csv` file. The summary reports median time, spread, rank within each case, and run environment. `--skip-memory` omits separate-process construction probes; otherwise `peak_rss_delta_bytes` is the increase in peak resident memory, which is only an approximate memory measure. NumPy input aliasing is reported for array construction.
 
-Each run writes a CSV, sample CSV where applicable, figure, and effective configuration under `results/`. [The main README](../../README.md) provides a compact results overview. A fresh complete pyperf run is needed before making a performance claim from repeated measurements. Compare runs only when hardware, Python, package versions, and workload settings match.
+Each run writes a CSV, sample CSV where applicable, figure, and effective configuration under `results/`. Automatic retention keeps the newest ten timestamped run sets in that directory; curated `reference-quick` files are exempt. Saved metadata retains useful comparison context such as Python and package versions, OS family, and CPU architecture, while removing hostnames, home-directory paths, boot time, and detailed OS build identifiers. [The main README](../../README.md) provides a compact results overview. A fresh complete pyperf run is needed before making a performance claim from repeated measurements. Compare runs only when hardware, Python, package versions, and workload settings match.
 
 The [GitHub Actions pyperf workflow](../../.github/workflows/pyunits-pyperf.yml) runs the pinned matrix on `ubuntu-24.04` when dispatched manually. It uses the Python version, package pins, cases, sizes, libraries, timing settings, and output directory from `config.dip`; the workflow selects `--source pinned --mode pyperf`. Its job summary contains the measured median table, and its artifact holds the raw pyperf JSON, CSV files, figure, effective configuration, and a Markdown copy of the summary. GitHub runner timings should be compared only with runs on equivalent runner hardware and software.

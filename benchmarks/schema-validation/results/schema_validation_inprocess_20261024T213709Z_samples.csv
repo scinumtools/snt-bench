@@ -1,0 +1,9 @@
+run_utc,participant,participant_version,case_class,fixture_count,sample,elapsed_ns,elapsed_ms,platform,python_version
+2026-10-24T21:37:09+00:00,dipl,0.9.8,valid,2,1,975625,0.975625,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,dipl,0.9.8,valid,2,2,1402542,1.402542,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,dipl,0.9.8,invalid,6,1,1398083,1.398083,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,dipl,0.9.8,invalid,6,2,1415833,1.415833,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,jsonschema,4.26.0,valid,2,1,158000,0.158,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,jsonschema,4.26.0,valid,2,2,163708,0.163708,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,jsonschema,4.26.0,invalid,6,1,321625,0.321625,macOS-arm64,3.13.15
+2026-10-24T21:37:09+00:00,jsonschema,4.26.0,invalid,6,2,321625,0.321625,macOS-arm64,3.13.15

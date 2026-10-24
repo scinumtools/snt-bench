@@ -1,3 +1,0 @@
-participant,participant_version,case_class,fixture_count,samples_per_fixture,median_ms,min_ms,max_ms
-dipl,0.9.8,valid,2,1,15.011,14.757041,15.264959
-dipl,0.9.8,invalid,6,1,14.530396,14.353541,15.487708

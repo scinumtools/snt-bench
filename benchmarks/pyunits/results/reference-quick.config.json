@@ -1,5 +1,5 @@
 {
-  "config_path": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/config.dip",
+  "config_path": "benchmarks/pyunits/config.dip",
   "config_sha256": "82cc3e6665a29af69e81f530c7e33c505d841879b16dcc07ac9c69c90df6e0e7",
   "settings": {
     "benchmark": "pyunits",
@@ -81,12 +81,12 @@
     "reference_repository": "https://github.com/scinumtools/snt3"
   },
   "command": [
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/bin/python",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/matrix.py",
+    "python",
+    "benchmarks/pyunits/matrix.py",
     "--config",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/config.dip",
+    "benchmarks/pyunits/config.dip",
     "--csv-output",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/results/pyunits_pinned_quick_20261024T190943Z_20789.csv",
+    "benchmarks/pyunits/results/pyunits_pinned_quick_20261024T190943Z_20789.csv",
     "--sizes",
     "3",
     "1000",
@@ -120,9 +120,9 @@
     "--skip-memory",
     "--quick"
   ],
-  "python": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/bin/python",
+  "python": "python",
   "actual_snt": {
     "version": "0.9.8",
-    "package_path": "/Users/perseus/Projects/snt-bench/benchmarks/pyunits/.venv-pinned/lib/python3.13/site-packages/scinumtools3/__init__.py"
+    "package_path": "benchmarks/pyunits/.venv-pinned/lib/python3.13/site-packages/scinumtools3/__init__.py"
   }
 }

@@ -16,6 +16,10 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 REPO_DIR = HERE.parents[1]
+sys.path.insert(0, str(REPO_DIR / "benchmarks"))
+from result_retention import prune_old_results
+from result_metadata import command_labels, path_label, sanitize_result_metadata
+
 DEFAULT_CONFIG = HERE / "config.dip"
 DIST_NAMES = {"scinumtools3": "scinumtools3", "pyyaml": "PyYAML"}
 
@@ -158,17 +162,21 @@ def main():
                        for name in ("name_prefix", "name_min_digits", "value_period", "value_divisor")},
     }
     snapshot = {
-        "config_path": str(config_path),
+        "config_path": path_label(config_path, REPO_DIR),
         "config_sha256": hashlib.sha256(config_text.encode()).hexdigest(),
         "settings": settings,
         "projects": projects,
         "provenance": {name: get(f"provenance.{name}")
                        for name in ("method_website", "json_website", "tomllib_website")},
-        "command": command,
-        "python": python_bin,
+        "command": command_labels(command, REPO_DIR),
+        "python": path_label(python_bin, REPO_DIR),
     }
     base.with_suffix(".config.json").write_text(json.dumps(snapshot, indent=2) + "\n")
     print(f"Configuration: {base.with_suffix('.config.json')}")
+    sanitize_result_metadata(results_dir, REPO_DIR)
+    removed = prune_old_results(results_dir)
+    if removed:
+        print(f"Pruned {len(removed)} files from result sets older than the newest 10.")
 
 
 if __name__ == "__main__":

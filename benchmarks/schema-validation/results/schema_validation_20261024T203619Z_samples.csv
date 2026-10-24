@@ -1,9 +1,0 @@
-run_utc,participant,participant_version,case_id,case_class,sample,elapsed_ns,elapsed_ms,platform,python_version
-2026-10-24T20:36:19+00:00,dipl,0.9.8,valid/steady,valid,1,15264959,15.264959,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,valid/transient,valid,1,14757041,14.757041,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/missing-required,invalid,1,14661417,14.661417,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/wrong-type,invalid,1,15487708,15.487708,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/enum,invalid,1,14456083,14.456083,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/range,invalid,1,14380750,14.38075,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/pattern,invalid,1,14604709,14.604709,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15
-2026-10-24T20:36:20+00:00,dipl,0.9.8,invalid/nested-bound,invalid,1,14353541,14.353541,macOS-27.0.1-arm64-arm-64bit-Mach-O,3.13.15

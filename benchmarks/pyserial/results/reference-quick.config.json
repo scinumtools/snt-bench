@@ -1,5 +1,5 @@
 {
-  "config_path": "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/config.dip",
+  "config_path": "benchmarks/pyserial/config.dip",
   "config_sha256": "9279b1ec2086a79eda8e697dcbdb2dc64268dcd3efddca4140ccc8b3f8840cf6",
   "settings": {
     "formats": [
@@ -62,14 +62,14 @@
     "tomllib_website": "https://docs.python.org/3.13/library/tomllib.html"
   },
   "command": [
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/.venv-pinned/bin/python",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/benchmark.py",
+    "python",
+    "benchmarks/pyserial/benchmark.py",
     "--config",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/config.dip",
+    "benchmarks/pyserial/config.dip",
     "--output",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.csv",
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.csv",
     "--figure",
-    "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.png"
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.png"
   ],
-  "python": "/Users/perseus/Projects/snt-bench/benchmarks/pyserial/.venv-pinned/bin/python"
+  "python": "python"
 }

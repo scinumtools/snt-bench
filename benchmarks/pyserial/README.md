@@ -15,7 +15,7 @@ From the repository root:
 ./setup.sh --benchmark pyserial --config path/to/custom.dip
 ```
 
-The first run creates an isolated Python environment and installs the versions in `config.dip`. `--python PATH` selects a prepared interpreter whose installed versions match the DIP. Each run writes a timestamped CSV, figure, and effective configuration snapshot to the configured results directory. The smallest generated document for each selected format is written to [`documents/`](documents/) when `execution.outputs.export_smallest` is true.
+The first run creates an isolated Python environment and installs the versions in `config.dip`. `--python PATH` selects a prepared interpreter whose installed versions match the DIP. Each run writes a timestamped CSV, figure, and effective configuration snapshot to the configured results directory; automatic retention keeps the newest ten timestamped run sets. Saved results retain Python and package versions and the OS family and CPU architecture, but omit hostnames, home-directory paths, and detailed OS build identifiers. The smallest generated document for each selected format is written to [`documents/`](documents/) when `execution.outputs.export_smallest` is true.
 
 ## What is measured
 

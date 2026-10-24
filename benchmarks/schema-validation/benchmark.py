@@ -31,6 +31,10 @@ from scinumtools3.dip import DIP
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
+sys.path.insert(0, str(REPO / "benchmarks"))
+from result_retention import prune_old_results
+from result_metadata import path_label, platform_label, sanitize_result_metadata
+
 DEFAULT_CONFIG = HERE / "config.dip"
 PARTICIPANTS = ("dipl", "jsonschema", "cue", "pkl")
 COLORS = {"dipl": "#0072B2", "jsonschema": "#E69F00", "cue": "#009E73", "pkl": "#D55E00"}
@@ -337,7 +341,7 @@ def main():
                     "batch_elapsed_ns": elapsed_ns,
                     "batch_elapsed_ms": elapsed_ns / 1e6,
                     "ms_per_document": elapsed_ns / 1e6 / len(batch),
-                    "platform": platform.platform(),
+                    "platform": platform_label(),
                     "python_version": platform.python_version(),
                 })
 
@@ -371,14 +375,14 @@ def main():
     draw_figure(summary, figure_path, 300)
     config_text = config_path.read_text(encoding="utf-8")
     snapshot = {
-        "config_path": str(config_path),
+        "config_path": path_label(config_path, REPO),
         "config_sha256": hashlib.sha256(config_text.encode()).hexdigest(),
         "participants": versions,
         "case_ids": [item["id"] for item in cases],
         "samples": samples,
         "warmups": warmups,
         "python_version": platform.python_version(),
-        "platform": platform.platform(),
+        "platform": platform_label(),
     }
     (output_dir / f"{prefix}.config.json").write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
     print(f"Correctness: {output_dir / f'{prefix}_correctness.csv'} (all cases passed)")
@@ -387,6 +391,10 @@ def main():
     for row in summary:
         print(f"{row['participant']} {row['participant_version']} {row['case_class']}: "
               f"median {row['median_batch_ms']:.3f} ms for a {row['fixture_count']}-document batch")
+    sanitize_result_metadata(output_dir, REPO)
+    removed = prune_old_results(output_dir)
+    if removed:
+        print(f"Pruned {len(removed)} files from result sets older than the newest 10.")
 
 
 if __name__ == "__main__":

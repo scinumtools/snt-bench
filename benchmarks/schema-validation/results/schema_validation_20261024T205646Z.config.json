@@ -1,5 +1,5 @@
 {
-  "config_path": "/Users/perseus/Projects/snt-bench/benchmarks/schema-validation/config.dip",
+  "config_path": "benchmarks/schema-validation/config.dip",
   "config_sha256": "b64a09bcbde149f2647a07045f000fe8dce98293c649586dda9b37b8bd92ad4e",
   "participants": {
     "dipl": "0.9.8",
@@ -20,5 +20,5 @@
   "samples": 2,
   "warmups": 1,
   "python_version": "3.13.15",
-  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O"
+  "platform": "macOS-arm64"
 }

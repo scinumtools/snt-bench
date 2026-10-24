@@ -35,6 +35,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--python", help="Use a prepared interpreter; no packages are installed into it")
+    parser.add_argument("--method", choices=("cli", "inprocess"), default="cli",
+                        help="Compare all native CLIs or the DIPL and JSON Schema Python APIs")
     parser.add_argument("--participant", action="append", choices=("dipl", "jsonschema", "cue", "pkl"))
     parser.add_argument("--samples", type=int)
     parser.add_argument("--list-cases", action="store_true")
@@ -79,7 +81,11 @@ def main():
         if needs_install:
             subprocess.run([python, "-m", "pip", "install", *requirements], check=True)
 
-    command = [python, str(HERE / "benchmark.py"), "--config", str(config)]
+    if args.method == "inprocess" and any(participant not in ("dipl", "jsonschema")
+                                           for participant in args.participant or ()):
+        raise SystemExit("The in-process method supports only --participant dipl and --participant jsonschema")
+    script = "benchmark_inprocess.py" if args.method == "inprocess" else "benchmark.py"
+    command = [python, str(HERE / script), "--config", str(config)]
     if args.samples is not None:
         command.extend(("--samples", str(args.samples)))
     for participant in args.participant or ():
