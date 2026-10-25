@@ -26,10 +26,12 @@ The default quick method uses two warmups and five samples per format and size, 
 
 ## Reference figure and analysis
 
+The reference figure and data use SNT3 0.9.10. All 16 parser/size combinations passed exact equality checks. DIPL medians were 1.18 ms for 10 parameters, 2.86 ms for 100, 30.5 ms for 1,000, and 383 ms for 10,000. Relative to the previous 0.9.8 reference, 100, 1,000, and 10,000 parameters are about 11%, 19%, and 68% faster; 10 parameters is slower (1.18 ms vs 0.44 ms), where fixed overhead and quick-run spread are substantial. The large-input gains align with [parser optimization](https://github.com/scinumtools/snt3/commit/626e1298) and [follow-up optimization](https://github.com/scinumtools/snt3/commit/fb692260). These local quick-run comparisons should be confirmed with repeated pyperf before publication-grade claims.
+
 ![Reference parsing times by parameter count and encoded document size](results/reference-quick.png)
 
 The figure legend names each parser and shows its pinned package version; the standard-library parsers are labeled with the Python version.
 
 The [full CSV](results/reference-quick.csv) and [effective configuration](results/reference-quick.config.json) contain the measurements and environment for this figure.
 
-All 16 format-and-size cases in this reference passed exact equality checks. JSON has the lowest median at all four parameter counts in this run. At 10,000 parameters, the medians are 1.58 ms for JSON, 27.01 ms for TOML, 266.84 ms for YAML, and 1.182 s for DIPL. The encoded documents at that size range from 139 kB for TOML to 239 kB for DIPL. DIPL's timed path includes evaluating typed nodes and extracting them into the shared Python mapping, so the result includes more work than a direct dictionary decode. The DIPL case also had a 59 ms interquartile range at 10,000 parameters. Treat these as measurements of the selected parsers and workload on one machine, not a general ranking of the data formats.
+JSON has the lowest median at all four parameter counts in this run. At 10,000 parameters, the medians are 1.86 ms for JSON, 28.92 ms for TOML, 283.61 ms for YAML, and 383 ms for DIPL. The encoded documents at that size range from 139 kB for TOML to 239 kB for DIPL. DIPL's timed path includes evaluating typed nodes and extracting them into the shared Python mapping, so the result includes more work than a direct dictionary decode. The DIPL 10,000-parameter case had a 31 ms interquartile range. Treat these as measurements of the selected parsers and workload on one machine, not a general ranking of the data formats.

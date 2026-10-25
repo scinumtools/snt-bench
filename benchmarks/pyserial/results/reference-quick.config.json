@@ -1,6 +1,6 @@
 {
   "config_path": "benchmarks/pyserial/config.dip",
-  "config_sha256": "9279b1ec2086a79eda8e697dcbdb2dc64268dcd3efddca4140ccc8b3f8840cf6",
+  "config_sha256": "de34ba4bcb7b6a9d8b643c15eaffed5c1f4dd81c001851380c5f18ad71057f41",
   "settings": {
     "formats": [
       "json",
@@ -8,6 +8,7 @@
       "toml",
       "dipl"
     ],
+    "snt_source": "pinned",
     "parameter_counts": [
       10,
       100,
@@ -36,7 +37,7 @@
   },
   "projects": {
     "scinumtools3": {
-      "version": "0.9.8",
+      "version": "0.9.10",
       "website": "https://github.com/scinumtools/snt3"
     },
     "pyyaml": {
@@ -56,6 +57,9 @@
       "website": "https://matplotlib.org/"
     }
   },
+  "snt_local_revision": null,
+  "snt_local_worktree_status": [],
+  "snt_local_diff_sha256": null,
   "provenance": {
     "method_website": "https://github.com/Canop/bench-config-deserializers",
     "json_website": "https://docs.python.org/3.13/library/json.html",
@@ -67,9 +71,9 @@
     "--config",
     "benchmarks/pyserial/config.dip",
     "--output",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.csv",
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261025T114450Z_76263.csv",
     "--figure",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261024T193736Z_25698.png"
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261025T114450Z_76263.png"
   ],
   "python": "python"
 }

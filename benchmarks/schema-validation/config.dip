@@ -61,9 +61,9 @@ schema_validation
 
   packages
     scinumtools3
-      version str = "0.9.8"
+      version str = "0.9.10"
         ?descr "Pinned SNT3 release used by the DIPL Python adapter."
-        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.8/"
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.10/"
 
       website str = "https://github.com/scinumtools/snt3"
         ?descr "SNT3 project home."

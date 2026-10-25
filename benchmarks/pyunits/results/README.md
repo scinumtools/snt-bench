@@ -1,6 +1,6 @@
 # Pyunits result snapshots
 
-`reference-quick.csv`, `reference-quick_samples.csv`, `reference-quick.config.json`, and `reference-quick.png` are a curated full-matrix quick run of the pinned release, recorded on 2026-10-24 at 19:09 UTC. The main README gives its environment and a selection of its timings. Quick results are single-process development measurements.
+`reference-quick.csv`, `reference-quick_samples.csv`, `reference-quick.config.json`, and `reference-quick.png` are a curated full-matrix quick run pinned to SNT3 0.9.10, recorded on 2026-10-25 at 12:05 UTC. The main README gives its environment and a selection of its timings. Quick results are single-process development measurements.
 
 `github-pyperf-40137348007.*` archives the representative CI pyperf run and its figure, summary, raw measurements, and configuration. See the [pyunits README](../README.md#github-actions-pyperf-screen) for its scope and interpretation.
 

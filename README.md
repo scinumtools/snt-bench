@@ -23,8 +23,7 @@ the pinned unit-library releases.
 ## Uncertainty propagation
 
 Configured unit-uncertainty cases compared with first-order analytical
-propagation and seeded Monte Carlo estimates. SNT interval bounds and Pint and
-MetroloPy standard uncertainties are identified separately.
+propagation and seeded Monte Carlo estimates. The plot compares reported uncertainty with seeded Monte Carlo spread and shows interval coverage.
 
 [Methods, full results, and run instructions](benchmarks/uncertainty-propagation/README.md).
 
@@ -56,4 +55,4 @@ Feature support and command-line validation timing comparison for DIPL, JSON Sch
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 
-![Schema validation native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](benchmarks/schema-validation/results/schema_validation_20261024T205728Z.png)
+![Schema validation native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](benchmarks/schema-validation/results/schema_validation_20261025T120518Z.png)

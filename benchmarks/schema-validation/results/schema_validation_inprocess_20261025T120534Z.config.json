@@ -1,8 +1,9 @@
 {
   "config_path": "benchmarks/schema-validation/config.dip",
-  "config_sha256": "b64a09bcbde149f2647a07045f000fe8dce98293c649586dda9b37b8bd92ad4e",
+  "config_sha256": "27798e58a1e01656543265b1f5c21df524e7a57ceeaba902c520bd44f0862f52",
+  "method": "in-process Python APIs; no subprocess launched by the timed operation",
   "participants": {
-    "dipl": "0.9.8",
+    "dipl": "0.9.10",
     "jsonschema": "4.26.0"
   },
   "case_ids": [
@@ -15,8 +16,8 @@
     "invalid/pattern",
     "invalid/nested-bound"
   ],
-  "samples": 1,
-  "warmups": 1,
+  "samples": 100,
+  "warmups": 10,
   "python_version": "3.13.15",
   "platform": "macOS-arm64"
 }

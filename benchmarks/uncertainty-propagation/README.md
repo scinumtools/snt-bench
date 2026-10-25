@@ -25,7 +25,7 @@ coverage relative to the normal one-standard-deviation reference (68.27%).
 | `product` | Multiply independent normal metre and second quantities; compares propagated uncertainty with the exact product-distribution standard deviation. |
 | `reciprocal` | Propagate uncertainty through `1/x`; compares first-order propagation with Monte Carlo. The normal input is centered 40 standard deviations from zero. |
 | `square_nonlinear` | Square a normal input with a large relative uncertainty; compares first-order output uncertainty and nominal value with the exact output moments and Monte Carlo. |
-| `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. Pinned SNT3 0.9.8 has no arbitrary input-correlation API, so its CSV row is marked unsupported; local SNT3 is evaluated when that API is present. |
+| `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. SNT3 0.9.10 propagates the configured correlation through source-aware first-order sensitivities. |
 | `rectangular_linear` | Compare a uniform Monte Carlo input with library inputs carrying the same mean and standard deviation; shows how a one-standard-deviation interval's coverage depends on distribution shape. |
 
 First-order references follow the [GUM law of propagation](https://doi.org/10.59161/JCGM100-2008E).
@@ -45,11 +45,9 @@ For the rectangular case, each package receives the same nominal value and
 standard deviation; the uniform distribution is used only for the Monte Carlo
 reference, so this case measures propagation behavior and interval coverage,
 not native non-normal-distribution support.
-The pinned SNT3 0.9.8 release uses conservative interval propagation for these
-operations; the local checkout uses its current PUQ propagation model. The
-reported interval coverage is descriptive: a conservative bound can cover more
-draws than a one-standard-deviation estimate, and a uniform distribution does
-not have the normal 68.27% coverage within ±1 standard deviation.
+SNT3 0.9.10 uses source-aware first-order propagation and represents input correlations through shared uncertainty sources. This behavior is documented in the [implementation change](https://github.com/scinumtools/snt3/commit/c82b6c97). The
+reported interval coverage is descriptive: a uniform distribution does not
+have the normal 68.27% coverage within ±1 standard deviation.
 
 ## Results
 
@@ -59,15 +57,11 @@ The upper panel shows reported uncertainty divided by Monte Carlo standard
 deviation; the horizontal reference at `1` indicates equal spread. The lower
 panel shows the observed coverage percentage of each reported ±uncertainty
 interval, with 95% Wilson confidence intervals for Monte Carlo sampling and a
-68.27% normal one-sigma reference line. In the pinned SNT3 0.9.8 results, the
-addition and product bounds are wider than
-the Monte Carlo standard deviation, while the linear conversion agrees closely.
+68.27% normal one-sigma reference line. In this pinned SNT3 0.9.10 run, addition, product, reciprocal, and linear conversion agree with the first-order comparison participants. For correlated addition, SNT, Pint, and MetroloPy report 0.475395 against a Monte Carlo standard deviation of 0.476318. The nonlinear square case reports first-order uncertainty 0.4 while Monte Carlo spread is about 0.4558 and the Monte Carlo mean differs from the nominal square, illustrating the limits of first-order propagation for this deliberately nonlinear input.
 For the uniform input, all participants report the input standard deviation,
 but the interval covers about 57.6% of draws, as expected for a uniform
-distribution rather than a normal one. The nonlinear square case shifts the
-Monte Carlo mean above the nominal square and increases the output spread; the
-CSV quantifies both effects. The correlation case agrees with its closed-form
-reference for Pint and MetroloPy; SNT3 0.9.8 is marked unsupported.
+distribution rather than a normal one. The correlation case agrees with the
+closed-form reference across all three packages.
 
 The [CSV](results/reference-quick.csv) includes signed and relative errors,
 coverage, and Monte Carlo reference checks. The
