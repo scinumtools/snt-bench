@@ -1,6 +1,17 @@
 # User-adjustable uncertainty propagation protocol. run.py parses this file as DIPL.
 uncertainty_propagation
   execution
+    target
+      source str = "pinned"
+        ?descr "Use the configured SNT3 package pin or the neighboring local source checkout."
+
+    paths
+      local_repo str = "../scinumtools3"
+        ?descr "SNT3 source checkout used when execution.target.source is local."
+
+      local_python_base str = ".venv/bin/python"
+        ?descr "Python interpreter path relative to local_repo; its ABI must match the built extension."
+
     python_base str = "python3.13"
       ?descr "Interpreter used to create the isolated pinned environment."
 
@@ -24,7 +35,7 @@ uncertainty_propagation
       cases str[:] = ["*"]
         ?descr "Case ID glob patterns to run."
 
-    # Nominals and standard deviations define independent normal input distributions.
+    # Case inputs and output models are configured independently below.
     linear_conversion
       nominal float = 20.0
         ?descr "Nominal temperature in degrees Celsius."
@@ -95,12 +106,54 @@ uncertainty_propagation
       unit str = "s"
         ?descr "Unit of the denominator."
 
+    square_nonlinear
+      x float = 0.5
+        ?descr "Nominal input to the square model."
+
+      sigma_x float = 0.4
+        ?descr "Input standard deviation; a large ratio to x makes the output distribution asymmetric."
+
+      unit str = "m"
+        ?descr "Input unit; output unit is its square."
+
+    correlated_addition
+      x float = 10.0
+        ?descr "First addend nominal value."
+
+      sigma_x float = 0.2
+        ?descr "First addend standard deviation."
+
+      y float = 4.0
+        ?descr "Second addend nominal value."
+
+      sigma_y float = 0.3
+        ?descr "Second addend standard deviation."
+
+      correlation float = 0.8
+        ?descr "Correlation coefficient shared by sampling and each library's input model."
+
+      unit str = "m"
+        ?descr "Unit shared by the correlated addends."
+
+    rectangular_linear
+      x float = 10.0
+        ?descr "Center of the rectangular input distribution."
+
+      standard_deviation float = 0.2
+        ?descr "Standard deviation of the rectangular distribution; half-width is sqrt(3) times this value."
+
+      unit str = "m"
+        ?descr "Unit of the rectangular input and its propagated result."
+
   semantics
     normal_coverage float = 0.95
       ?descr "Central Monte Carlo coverage interval requested for the reported propagation interval."
 
+    one_sigma_normal_coverage float = 0.6826894921370859
+      ?descr "Reference coverage for a symmetric plus/minus one-standard-deviation interval under a normal output model."
+
     tolerance_relative float = 0.03
-      ?descr "Relative tolerance for analytic-versus-Monte-Carlo standard deviation checks."
+      ?descr "Relative tolerance for closed-form-reference versus Monte Carlo standard deviation checks."
 
   packages
     snt

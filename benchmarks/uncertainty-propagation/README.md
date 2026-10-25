@@ -1,79 +1,84 @@
 # Uncertainty propagation
 
 This benchmark compares propagated uncertainty values from SNT3, Pint, and MetroloPy
-against first-order analytical calculations and reproducible Monte Carlo
-propagation. It aims to expose behavior and semantics rather than rank packages
-as interchangeable implementations. Inputs, operation cases, library pins,
-Monte Carlo sample count and seed, interval coverage, tolerances, and output
-settings are read from [`config.dip`](config.dip).
+against closed-form references and seeded Monte Carlo propagation. It reports
+uncertainty spread, nominal-value bias, and coverage of each reported
+estimate ± uncertainty interval. Inputs, cases, library pins, sample count and
+seed, coverage targets, tolerances, and output settings are read from
+[`config.dip`](config.dip).
 
 ## Cases and interpretation
 
-Inputs are independent normal distributions with configured nominal values and
-standard deviations. Monte Carlo summaries use the fixed NumPy seed. Every row
-records package-reported uncertainty, first-order analytical standard
-deviation, Monte Carlo mean and standard deviation, the configured central
-Monte Carlo interval, coverage of the package-reported `estimate ± uncertainty`
-interval, and whether Monte Carlo spread agrees with the analytical result
-within the configured sampling tolerance.
+Monte Carlo summaries use the fixed NumPy seed. Most inputs are normal; the
+rectangular case uses a uniform input and the correlation case uses a bivariate
+normal. Each row records the package result and uncertainty, closed-form
+reference standard deviation, Monte Carlo mean and standard deviation, central
+95% Monte Carlo interval, and observed coverage of the reported
+`estimate ± uncertainty` interval. Error columns show uncertainty error versus
+Monte Carlo spread, nominal-value difference from the Monte Carlo mean, and
+coverage relative to the normal one-standard-deviation reference (68.27%).
 
 | Case ID | Model and purpose |
 |---|---|
 | `linear_conversion` | Convert an uncertain Celsius temperature point to Fahrenheit; checks offset conversion and uncertainty scaling. |
-| `addition` | Add independent metre quantities; contrasts quadrature standard deviation with SNT's conservative absolute-uncertainty sum. |
-| `product` | Multiply independent metre and second quantities; contrasts first-order standard uncertainty with SNT's interval bound. |
-| `reciprocal` | Propagate uncertainty through `1/x`; compares derivative approximation with the Monte Carlo distribution. |
+| `addition` | Add independent normal metre quantities; checks root-sum-square uncertainty propagation. |
+| `product` | Multiply independent normal metre and second quantities; compares propagated uncertainty with the exact product-distribution standard deviation. |
+| `reciprocal` | Propagate uncertainty through `1/x`; compares first-order propagation with Monte Carlo. The normal input is centered 40 standard deviations from zero. |
+| `square_nonlinear` | Square a normal input with a large relative uncertainty; compares first-order output uncertainty and nominal value with the exact output moments and Monte Carlo. |
+| `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. Pinned SNT3 0.9.8 has no arbitrary input-correlation API, so its CSV row is marked unsupported; local SNT3 is evaluated when that API is present. |
+| `rectangular_linear` | Compare a uniform Monte Carlo input with library inputs carrying the same mean and standard deviation; shows how a one-standard-deviation interval's coverage depends on distribution shape. |
 
-Analytical standard deviations follow the [GUM first-order law of propagation](https://doi.org/10.59161/JCGM100-2008E).
-The [2026 GUM amendment on nonlinearity](https://doi.org/10.59161/PPDI3267)
-is relevant to the reciprocal case. The sampling check follows the role of
+First-order references follow the [GUM law of propagation](https://doi.org/10.59161/JCGM100-2008E).
+The product and square cases use exact output moments for their configured
+Gaussian inputs. The [2026 GUM amendment on nonlinearity](https://doi.org/10.59161/PPDI3267)
+is relevant to the nonlinear cases. The sampling check follows the role of
 [JCGM 101:2008](https://doi.org/10.59161/JCGM101-2008), which describes
 propagation of distributions using a Monte Carlo method.
 
-SNT stores absolute uncertainty in the quantity's unit. Its documented
-addition/subtraction rule sums absolute uncertainties; multiplication/division
-use interval extrema, and selected math functions use first-order derivatives.
-These interval bounds are not one-sigma estimates. Pint's uncertainty
-integration is optional and uses the [`uncertainties` package](https://pint.readthedocs.io/en/0.26.2/getting/overview.html),
-which reports standard deviations propagated through first-order derivatives.
-MetroloPy's [`gummy` quantities](https://nrc-cnrc.github.io/MetroloPy/_build/html/metrolopy.html)
-carry units and standard uncertainties and propagate them using first-order
-uncertainty calculus. This suite checks independent inputs only, so MetroloPy's
-correlation support is not exercised here.
-The plot therefore places each reported uncertainty beside Monte Carlo
-standard deviation, while the CSV identifies the model for each row. A wider
-SNT bound is not labeled a worse standard deviation. The benchmark models
-independent inputs and does not exercise correlation handling in Pint or
-MetroloPy.
+Pint uses the [`uncertainties` package](https://pint.readthedocs.io/en/0.26.2/getting/overview.html)
+for first-order standard uncertainty propagation; its correlation construction
+is documented by [`uncertainties`](https://uncertainties.readthedocs.io/en/latest/user_guide.html#use-of-a-correlation-matrix).
+MetroloPy's
+[`gummy` quantities](https://nrc-cnrc.github.io/MetroloPy/_build/html/metrolopy.html)
+support first-order propagation, correlated inputs, and distribution objects.
+For the rectangular case, each package receives the same nominal value and
+standard deviation; the uniform distribution is used only for the Monte Carlo
+reference, so this case measures propagation behavior and interval coverage,
+not native non-normal-distribution support.
+The pinned SNT3 0.9.8 release uses conservative interval propagation for these
+operations; the local checkout uses its current PUQ propagation model. The
+reported interval coverage is descriptive: a conservative bound can cover more
+draws than a one-standard-deviation estimate, and a uniform distribution does
+not have the normal 68.27% coverage within ±1 standard deviation.
 
 ## Results
 
-![Reported uncertainty relative to Monte Carlo standard deviation](results/reference-quick.png)
+![Uncertainty ratio and observed coverage with Monte Carlo confidence intervals](results/reference-quick.png)
 
-The vertical reference at `1` is the Monte Carlo standard deviation for each
-case. Pint and MetroloPy first-order uncertainties agree closely with it in all
-four cases.
-SNT matches Pint for the linear conversion, while its addition and product
-intervals are wider by design; in the reciprocal case its bound is modestly
-wider than the first-order estimate. All four Monte Carlo standard deviations
-are within 0.7% of the analytical values in this run. The CSV's `mc_coverage`
-column further shows how often each reported symmetric interval covers the
-Monte Carlo draws.
+The upper panel shows reported uncertainty divided by Monte Carlo standard
+deviation; the horizontal reference at `1` indicates equal spread. The lower
+panel shows the observed coverage percentage of each reported ±uncertainty
+interval, with 95% Wilson confidence intervals for Monte Carlo sampling and a
+68.27% normal one-sigma reference line. In the pinned SNT3 0.9.8 results, the
+addition and product bounds are wider than
+the Monte Carlo standard deviation, while the linear conversion agrees closely.
+For the uniform input, all participants report the input standard deviation,
+but the interval covers about 57.6% of draws, as expected for a uniform
+distribution rather than a normal one. The nonlinear square case shifts the
+Monte Carlo mean above the nominal square and increases the output spread; the
+CSV quantifies both effects. The correlation case agrees with its closed-form
+reference for Pint and MetroloPy; SNT3 0.9.8 is marked unsupported.
 
-For the independent-addition case, the analytical standard deviation is
-`sqrt(0.2² + 0.3²) ≈ 0.361 m`; SNT reports the conservative bound `0.5 m`, while
-Pint and MetroloPy report `0.361 m`. For the product case, the first-order standard
-deviation is approximately `3.105 m·s`, and SNT reports an interval bound of
-`3.86 m·s`. The [CSV](results/reference-quick.csv) contains Monte Carlo
-statistics and coverage. The [run snapshot](results/reference-quick.config.json)
-records the pinned versions and config hash.
+The [CSV](results/reference-quick.csv) includes signed and relative errors,
+coverage, and Monte Carlo reference checks. The
+[run snapshot](results/reference-quick.config.json) records the pinned versions
+and configuration hash.
 
-This is an illustrative suite, not a metrological validation campaign. Normal
-independent inputs and a few smooth models do not cover correlated quantities,
-non-normal distributions, discontinuities, heavy-tailed inputs, or all
-nonlinear regimes. For publication, report the exact configuration and software
-versions and extend cases to the measurement model and input distributions
-relevant to the scientific use.
+This is an illustrative suite, not a metrological validation campaign. It does
+not cover discontinuities, heavy-tailed inputs, or all nonlinear regimes. For
+publication, report the exact configuration and software versions and extend
+cases to the measurement model and input distributions relevant to the
+scientific use.
 
 ## Running
 
@@ -81,11 +86,22 @@ relevant to the scientific use.
 ./setup.sh --benchmark uncertainty-propagation --quick
 ```
 
+To benchmark the neighboring `../scinumtools3` checkout, use:
+
+```sh
+./setup.sh --benchmark uncertainty-propagation --source local
+```
+
+Local mode uses the Python interpreter and built extension from that checkout,
+then creates a separate `.venv-local` for the pinned comparison dependencies.
+The local extension must be built for the configured interpreter ABI. Its
+results are timestamped and do not replace the tracked pinned reference.
+
 Select operations with repeatable `--case GLOB` arguments, participants with
 `--library snt|pint|metrolopy`, and sample count with `--samples N`. Pass `--python PATH`
 to use an existing environment. `--quick` refreshes the tracked reference
-snapshot. New runs create timestamped files; retention removes result groups
-older than the newest ten.
+snapshot for pinned runs. New runs create timestamped files; retention removes
+result groups older than the newest ten.
 
 ## References
 
