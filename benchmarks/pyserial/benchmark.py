@@ -5,6 +5,7 @@ import csv
 from datetime import datetime, timezone
 import json
 import os
+import os
 from pathlib import Path
 import platform
 import re
@@ -252,7 +253,9 @@ def main():
                 "json_parser": f"stdlib/{platform.python_version()}",
                 "yaml_parser": f"PyYAML/{yaml.__version__}",
                 "toml_parser": f"tomllib/{platform.python_version()}",
-                "scinumtools3_version": scinumtools3.__version__,
+                "scinumtools3_version": (f"{scinumtools3.__version__} (local)"
+                                          if os.environ.get("SNT_BENCH_SOURCE") == "local"
+                                          else scinumtools3.__version__),
                 "status": "PASS",
             })
         exported_documents = True

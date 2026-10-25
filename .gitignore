@@ -216,6 +216,8 @@ benchmarks/pyunits/results/*
 !benchmarks/pyunits/results/reference-quick_samples.csv
 !benchmarks/pyunits/results/reference-quick.config.json
 !benchmarks/pyunits/results/reference-quick.png
+!benchmarks/pyunits/results/github-pyperf-40137348007.*
+!benchmarks/pyunits/results/github-pyperf-40137348007_samples.csv
 
 # Parsing comparison environments and generated runs.
 benchmarks/pyserial/.venv-*/

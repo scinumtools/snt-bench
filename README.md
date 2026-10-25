@@ -36,7 +36,7 @@ Comparison of SNT3, Pint, unyt, and Astropy unit operations across scalar and ar
 
 The workload categories are informed by [Goldbaum et al.'s unit-library benchmark (2018)](https://doi.org/10.21105/joss.00809).
 
-[Methods, full results, and run instructions](benchmarks/pyunits/README.md).
+[Methods, quick results, GitHub Actions pyperf screen, and run instructions](benchmarks/pyunits/README.md).
 
 ![Python unit-library timings by operation and input size](benchmarks/pyunits/results/reference-quick.png)
 

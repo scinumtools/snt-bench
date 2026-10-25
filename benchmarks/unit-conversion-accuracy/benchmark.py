@@ -1,5 +1,5 @@
 """Measure binary64 conversion error against exact rational references."""
-import argparse, fnmatch, math, struct
+import argparse, csv, fnmatch, math, struct
 from fractions import Fraction
 from pathlib import Path
 
@@ -13,7 +13,7 @@ def main():
     from scinumtools3.dip import DIP
     d=DIP(); d.add_file(a.config); cfg=d.parse()
     def get(path): return cfg[f"unit_conversion_accuracy.{path}"].value
-    import numpy as np, pandas as pd, matplotlib
+    import numpy as np, matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import pint, unyt as uy, astropy.units as au
@@ -54,20 +54,45 @@ def main():
                 atol=Fraction(str(float(get("tolerances.absolute")))); rtol=Fraction(str(float(get("tolerances.relative"))))
                 passed=(error<=atol or (bool(ref) and error/abs(ref)<=rtol)) and ulp<=int(get("tolerances.ulp"))
                 rows.append({"case_id":cid,"input":x,"source_unit":spec["source_unit"],"target_unit":spec["target_unit"],"library":lib,"output":y,"reference_exact_rational":f"{ref.numerator}/{ref.denominator}","reference_binary64":rounded,"absolute_error":abs_err,"relative_error":rel,"ulp_distance":ulp,"pass":passed})
-    df=pd.DataFrame(rows); a.output.parent.mkdir(parents=True,exist_ok=True); df.to_csv(a.output,index=False)
-    pivot=df.groupby(["case_id","library"],sort=False).agg(max_ulp=("ulp_distance","max"),max_abs_error=("absolute_error","max"),max_relative_error=("relative_error","max"),all_pass=("pass","all")).reset_index()
+    a.output.parent.mkdir(parents=True,exist_ok=True)
+    with a.output.open("w",newline="",encoding="utf-8") as stream:
+        writer=csv.DictWriter(stream,fieldnames=rows[0].keys(),lineterminator="\n")
+        writer.writeheader(); writer.writerows(rows)
+    pivot=[]
+    for cid in cases:
+        for lib in libs:
+            selected=[row for row in rows if row["case_id"]==cid and row["library"]==lib]
+            relative=[row["relative_error"] for row in selected if not math.isnan(row["relative_error"])]
+            pivot.append({"case_id":cid,"library":lib,
+                          "max_ulp":max(row["ulp_distance"] for row in selected),
+                          "max_abs_error":max(row["absolute_error"] for row in selected),
+                          "max_relative_error":max(relative) if relative else math.nan,
+                          "all_pass":all(row["pass"] for row in selected)})
     fig,axes=plt.subplots(1,2,figsize=(14,5.4),constrained_layout=True)
     package_versions={lib:get(f"packages.{lib}.version") for lib in libs}
     labels={lib:f"{lib} {package_versions[lib]}" for lib in libs}
+    case_positions=np.arange(len(cases),dtype=float)
+    offsets=np.linspace(-0.22,0.22,len(libs)) if len(libs)>1 else np.array([0.0])
+    markers=("o","s","^","D","v","P","X")
     for ax,col,title in [(axes[0],"max_ulp","Maximum ULP distance from rounded exact reference"),(axes[1],"max_relative_error","Maximum relative error")]:
-        for lib in libs:
-            sub=pivot[pivot.library==lib]; values=sub[col].fillna(0).to_numpy()
+        for index,lib in enumerate(libs):
+            by_case={row["case_id"]:row for row in pivot if row["library"]==lib}
+            values=np.array([by_case[case][col] for case in cases],dtype=float)
+            values=np.nan_to_num(values,nan=0.0)
             if col=="max_relative_error": values=np.maximum(values,1e-18)
-            ax.plot(sub.case_id,values,marker="o",label=labels[lib])
+            ax.scatter(case_positions+offsets[index],values,s=52,marker=markers[index%len(markers)],
+                       label=labels[lib],zorder=3)
+        ax.set_xticks(case_positions,cases)
+        ax.set_xlim(-0.5,len(cases)-0.5)
+        ax.tick_params(axis="x",rotation=25,labelsize=8)
+        ax.grid(True,which="both",alpha=.25)
         if col=="max_relative_error": ax.set_yscale("log")
-        ax.set_title(title); ax.tick_params(axis="x",rotation=25,labelsize=8); ax.grid(True,which="both",alpha=.25)
+        else:
+            ax.set_yticks([0,1]); ax.set_ylim(-0.25,1.25)
+        ax.set_title(title)
     axes[0].set_ylabel("ULP distance (binary64)"); axes[1].set_ylabel("relative error"); axes[1].legend(title="Pinned project",fontsize=8)
     fig.suptitle("Unit conversion accuracy · binary64 outputs"); a.figure.parent.mkdir(parents=True,exist_ok=True); fig.savefig(a.figure,dpi=int(get("execution.figure_dpi"))); plt.close(fig)
-    print(pivot.to_string(index=False))
-    if not df["pass"].all(): raise SystemExit("At least one conversion result exceeds configured tolerances")
+    print("case_id library max_ulp max_abs_error max_relative_error all_pass")
+    for row in pivot: print(" ".join(str(row[key]) for key in ("case_id","library","max_ulp","max_abs_error","max_relative_error","all_pass")))
+    if not all(row["pass"] for row in rows): raise SystemExit("At least one conversion result exceeds configured tolerances")
 if __name__=="__main__":main()

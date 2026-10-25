@@ -2,6 +2,17 @@
 # Parser algorithms and equivalent document structure are fixed by benchmark.py.
 pyserial
   execution
+    target
+      source str = "pinned"
+        ?descr "SNT3 source for the DIPL parser: pinned release or the local checkout."
+
+    paths
+      local_repo str = "../scinumtools3"
+        ?descr "SNT3 repository path used when the local source is selected."
+
+      local_python_base str = "python3.14"
+        ?descr "Interpreter matching the locally built SNT3 Python extension."
+
     environment
       python_base str = "python3.13"
         ?descr "Interpreter used to create the pinned benchmark environment."

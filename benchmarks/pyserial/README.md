@@ -13,9 +13,10 @@ From the repository root:
 ./setup.sh --benchmark pyserial --size 10 --size 100 --format json --format dipl
 ./setup.sh --benchmark pyserial --samples 7 --target-ms 20
 ./setup.sh --benchmark pyserial --config path/to/custom.dip
+./setup.sh --benchmark pyserial --source local
 ```
 
-The first run creates an isolated Python environment and installs the versions in `config.dip`. `--python PATH` selects a prepared interpreter whose installed versions match the DIP. Each run writes a timestamped CSV, figure, and effective configuration snapshot to the configured results directory; automatic retention keeps the newest ten timestamped run sets. Saved results retain Python and package versions and the OS family and CPU architecture, but omit hostnames, home-directory paths, and detailed OS build identifiers. The smallest generated document for each selected format is written to [`documents/`](documents/) when `execution.outputs.export_smallest` is true.
+The first pinned run creates an isolated Python environment and installs the versions in `config.dip`. `--source local` uses the Python binding built in the configured local SNT3 checkout, with a separate environment and the same versions of the other benchmark packages. It requires that the binding already be built for the configured local Python interpreter. To compare pinned and local SNT3 on exactly the same interpreter, install the pinned SNT3 release into `.venv-local` and run the pinned mode with `--python benchmarks/pyserial/.venv-local/bin/python`. Each run writes a timestamped CSV, figure, and effective configuration snapshot to the configured results directory; automatic retention keeps the newest ten timestamped run sets. Local-source snapshots record the SNT3 commit, working-tree paths, and a hash of the tracked diff. Saved results retain Python and package versions and the OS family and CPU architecture, but omit hostnames, home-directory paths, and detailed OS build identifiers. The smallest generated document for each selected format is written to [`documents/`](documents/) when `execution.outputs.export_smallest` is true.
 
 ## What is measured
 

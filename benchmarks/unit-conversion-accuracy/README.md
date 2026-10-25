@@ -43,6 +43,8 @@ definitions and SP 811 only for the international-foot relation.
 ![Binary64 ULP and relative error by conversion case and pinned unit library](results/reference-quick.png)
 
 The figure shows the largest error over the configured inputs in each case.
+Markers are horizontally offset within each category so identical or nearly
+identical library results remain visible; the offsets are visual only.
 All participating outputs in this reference run are within one ULP of the
 correctly rounded exact rational value. Maximum relative errors are on the
 order of `10⁻¹⁶`, as expected for ordinary binary64 rounding in these

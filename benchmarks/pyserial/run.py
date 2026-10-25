@@ -62,6 +62,7 @@ def pip_install(python_bin, requirements):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    parser.add_argument("--source", choices=("pinned", "local"), help="SNT3 source to benchmark")
     parser.add_argument("--python", help="Use a prepared interpreter without installing packages")
     parser.add_argument("--size", action="append", type=int, help="Parameter count; repeat to select sizes")
     parser.add_argument("--format", action="append", choices=("json", "yaml", "toml", "dipl"))
@@ -76,22 +77,37 @@ def main():
     config_text = config_path.read_text()
     pinned_snt = literal_string(config_text, "pyserial.packages.scinumtools3.version")
     base_python = literal_string(config_text, "pyserial.execution.environment.python_base")
+    source = args.source or literal_string(config_text, "pyserial.execution.target.source")
+    if source not in ("pinned", "local"):
+        parser.error("source must be pinned or local")
+    local_repo = Path(literal_string(config_text, "pyserial.execution.paths.local_repo"))
+    if not local_repo.is_absolute():
+        local_repo = (REPO_DIR / local_repo).resolve()
+    env = os.environ.copy()
+    if source == "local":
+        binding = local_repo / "build" / "python"
+        if not list((binding / "scinumtools3").glob("_snt*.*")):
+            raise SystemExit(f"Build the local Python binding first: {binding}")
+        env["PYTHONPATH"] = str(binding)
+        env["SNT_BENCH_SOURCE"] = "local"
+        base_python = literal_string(config_text, "pyserial.execution.paths.local_python_base")
     external_python = args.python is not None
     if external_python:
         python_bin = interpreter_path(args.python)
     else:
-        python_bin = str(HERE / ".venv-pinned" / "bin" / "python")
+        env_name = ".venv-pinned" if source == "pinned" else ".venv-local"
+        python_bin = str(HERE / env_name / "bin" / "python")
         if not Path(python_bin).exists():
-            subprocess.run([interpreter_path(base_python), "-m", "venv", str(HERE / ".venv-pinned")], check=True)
+            subprocess.run([interpreter_path(base_python), "-m", "venv", str(HERE / env_name)], check=True)
 
     if not args.ready:
         check = subprocess.run([python_bin, "-c", "import importlib.metadata as m; print(m.version('scinumtools3'))"],
-                               capture_output=True, text=True)
-        if check.returncode or check.stdout.strip() != pinned_snt:
+                               capture_output=True, text=True, env=env)
+        if source == "pinned" and (check.returncode or check.stdout.strip() != pinned_snt):
             if external_python:
                 raise SystemExit(f"{python_bin} needs scinumtools3=={pinned_snt}")
             pip_install(python_bin, [f"scinumtools3=={pinned_snt}"])
-        os.execve(python_bin, [python_bin, __file__, *sys.argv[1:], "--ready"], os.environ.copy())
+        os.execve(python_bin, [python_bin, __file__, *sys.argv[1:], "--ready"], env)
 
     from scinumtools3.dip import DIP
 
@@ -106,7 +122,8 @@ def main():
         path.split(".")[2] for path in values.select_paths("?pyserial.packages.")
         if path.endswith(".version")
     )
-    projects = {name: {"version": get(f"packages.{name}.version"),
+    projects = {name: {"version": ("local checkout" if name == "scinumtools3" and source == "local"
+                                     else get(f"packages.{name}.version")),
                        "website": get(f"packages.{name}.website")}
                 for name in package_names}
     missing = []
@@ -116,6 +133,8 @@ def main():
             found = version(distribution_name)
         except PackageNotFoundError:
             found = None
+        if name == "scinumtools3" and source == "local":
+            continue
         if found != detail["version"]:
             missing.append(f"{distribution_name}=={detail['version']}")
     if missing:
@@ -133,7 +152,7 @@ def main():
         results_dir = REPO_DIR / results_dir
     results_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    base = results_dir / f"pyserial_pinned_quick_{stamp}_{os.getpid()}"
+    base = results_dir / f"pyserial_{source}_quick_{stamp}_{os.getpid()}"
     command = [python_bin, str(HERE / "benchmark.py"), "--config", str(config_path),
                "--output", str(base.with_suffix(".csv")), "--figure", str(base.with_suffix(".png"))]
     for size in args.size or ():
@@ -144,10 +163,11 @@ def main():
                         ("--target-ms", args.target_ms), ("--max-loops", args.max_loops)):
         if value is not None:
             command.extend((flag, str(value)))
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True, env=env)
 
     settings = {
         "formats": args.format if args.format is not None else as_list(get("execution.selection.formats")),
+        "snt_source": source,
         "parameter_counts": args.size if args.size is not None else as_list(get("execution.selection.parameter_counts")),
         "samples": args.samples if args.samples is not None else get("timing.quick.samples"),
         "warmups": args.warmups if args.warmups is not None else get("timing.quick.warmups"),
@@ -161,11 +181,23 @@ def main():
         "parameters": {name: get(f"workload.parameters.{name}")
                        for name in ("name_prefix", "name_min_digits", "value_period", "value_divisor")},
     }
+    local_revision = (subprocess.run(["git", "-C", str(local_repo), "rev-parse", "HEAD"],
+                                     capture_output=True, text=True).stdout.strip()
+                      if source == "local" else None)
+    local_status = (subprocess.run(["git", "-C", str(local_repo), "status", "--short"],
+                                   capture_output=True, text=True).stdout.splitlines()
+                    if source == "local" else [])
+    local_diff = (subprocess.run(["git", "-C", str(local_repo), "diff", "HEAD", "--binary"],
+                                 capture_output=True).stdout
+                  if source == "local" else b"")
     snapshot = {
         "config_path": path_label(config_path, REPO_DIR),
         "config_sha256": hashlib.sha256(config_text.encode()).hexdigest(),
         "settings": settings,
         "projects": projects,
+        "snt_local_revision": local_revision,
+        "snt_local_worktree_status": local_status,
+        "snt_local_diff_sha256": hashlib.sha256(local_diff).hexdigest() if source == "local" else None,
         "provenance": {name: get(f"provenance.{name}")
                        for name in ("method_website", "json_website", "tomllib_website")},
         "command": command_labels(command, REPO_DIR),
