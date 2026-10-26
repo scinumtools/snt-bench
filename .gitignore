@@ -226,6 +226,15 @@ benchmarks/pyserial/results/*
 !benchmarks/pyserial/results/reference-quick.csv
 !benchmarks/pyserial/results/reference-quick.config.json
 !benchmarks/pyserial/results/reference-quick.png
+!benchmarks/pyserial/results/reference-common-mapping.png
+
+# Typed-configuration benchmark environment and generated results.
+benchmarks/typed-config/.venv-*/
+benchmarks/typed-config/results/*
+!benchmarks/typed-config/results/README.md
+!benchmarks/typed-config/results/reference-quick.csv
+!benchmarks/typed-config/results/reference-quick.config.json
+!benchmarks/typed-config/results/reference-quick.png
 
 # Numerical validation benchmark environments and generated run artifacts.
 benchmarks/unit-conversion-accuracy/.venv-*/

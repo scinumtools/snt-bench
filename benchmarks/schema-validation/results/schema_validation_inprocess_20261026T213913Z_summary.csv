@@ -1,0 +1,5 @@
+participant,participant_version,case_class,fixture_count,samples_per_batch,median_ms,min_ms,max_ms
+dipl,0.9.11 (local),valid,2,100,0.24954199999999999,0.201417,0.36375
+dipl,0.9.11 (local),invalid,6,100,0.33187500000000003,0.309041,0.407792
+jsonschema,4.26.0,valid,2,100,0.1553335,0.142958,0.220125
+jsonschema,4.26.0,invalid,6,100,0.254646,0.247584,0.40125

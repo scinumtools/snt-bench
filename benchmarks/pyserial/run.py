@@ -66,6 +66,7 @@ def main():
     parser.add_argument("--python", help="Use a prepared interpreter without installing packages")
     parser.add_argument("--size", action="append", type=int, help="Parameter count; repeat to select sizes")
     parser.add_argument("--format", action="append", choices=("json", "yaml", "toml", "dipl"))
+    parser.add_argument("--measurement", action="append", choices=("parser_only", "common_mapping"))
     parser.add_argument("--samples", type=int)
     parser.add_argument("--warmups", type=int)
     parser.add_argument("--target-ms", type=float)
@@ -159,6 +160,8 @@ def main():
         command.extend(("--size", str(size)))
     for fmt in args.format or ():
         command.extend(("--format", fmt))
+    for measurement in args.measurement or ():
+        command.extend(("--measurement", measurement))
     for flag, value in (("--samples", args.samples), ("--warmups", args.warmups),
                         ("--target-ms", args.target_ms), ("--max-loops", args.max_loops)):
         if value is not None:
@@ -167,6 +170,8 @@ def main():
 
     settings = {
         "formats": args.format if args.format is not None else as_list(get("execution.selection.formats")),
+        "measurements": (args.measurement if args.measurement is not None
+                         else as_list(get("execution.selection.measurements"))),
         "snt_source": source,
         "parameter_counts": args.size if args.size is not None else as_list(get("execution.selection.parameter_counts")),
         "samples": args.samples if args.samples is not None else get("timing.quick.samples"),

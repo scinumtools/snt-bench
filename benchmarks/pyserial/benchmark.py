@@ -5,7 +5,6 @@ import csv
 from datetime import datetime, timezone
 import json
 import os
-import os
 from pathlib import Path
 import platform
 import re
@@ -119,7 +118,7 @@ def write_if_changed(path, content):
     return True
 
 
-def decode(fmt, payload, count, settings):
+def parse_native(fmt, payload):
     if fmt == "json":
         return json.loads(payload)
     if fmt == "yaml":
@@ -129,20 +128,29 @@ def decode(fmt, payload, count, settings):
     if fmt == "dipl":
         parser = DIP()
         parser.add_string(payload)
-        env = parser.parse()
-        root = "experiment"
-        values = {node.name: node.value for node in env.select("?")}
-        experiment = {
-            "name": values[f"{root}.name"],
-            "enabled": values[f"{root}.enabled"],
-            "iterations": values[f"{root}.iterations"],
-            "timestep": values[f"{root}.timestep"],
-            "parameters": {parameter_name(i, settings):
-                           values[f"{root}.parameters.{parameter_name(i, settings)}"]
-                           for i in range(count)},
-        }
-        return {root: experiment}
+        return parser.parse()
     raise ValueError(fmt)
+
+
+def to_common_mapping(fmt, parsed, count, settings):
+    if fmt != "dipl":
+        return parsed
+    root = "experiment"
+    values = {node.name: node.value for node in parsed.select("?")}
+    experiment = {
+        "name": values[f"{root}.name"],
+        "enabled": values[f"{root}.enabled"],
+        "iterations": values[f"{root}.iterations"],
+        "timestep": values[f"{root}.timestep"],
+        "parameters": {parameter_name(i, settings):
+                       values[f"{root}.parameters.{parameter_name(i, settings)}"]
+                       for i in range(count)},
+    }
+    return {root: experiment}
+
+
+def decode(fmt, payload, count, settings):
+    return to_common_mapping(fmt, parse_native(fmt, payload), count, settings)
 
 
 def measure(function, samples, warmups, target_ms, max_loops):
@@ -189,6 +197,8 @@ def main():
     parser.add_argument("--documents-dir", type=Path, default=output_path("execution.outputs.documents_dir"))
     parser.add_argument("--size", action="append", type=int, help="Parameter count; repeat to select sizes")
     parser.add_argument("--format", action="append", choices=FORMATS, help="Parser; repeat to select formats")
+    parser.add_argument("--measurement", action="append", choices=("parser_only", "common_mapping"),
+                        help="Timed path; repeat to select paths")
     parser.add_argument("--samples", type=int, default=get("timing.quick.samples"))
     parser.add_argument("--warmups", type=int, default=get("timing.quick.warmups"))
     parser.add_argument("--target-ms", type=float, default=get("timing.quick.target_ms"))
@@ -196,6 +206,8 @@ def main():
     args = parser.parse_args()
     sizes = args.size if args.size is not None else as_list(get("execution.selection.parameter_counts"))
     formats = args.format if args.format is not None else as_list(get("execution.selection.formats"))
+    measurements = (args.measurement if args.measurement is not None
+                    else as_list(get("execution.selection.measurements")))
     settings = {
         "experiment_name": get("workload.experiment.name"),
         "experiment_enabled": get("workload.experiment.enabled"),
@@ -212,6 +224,9 @@ def main():
         parser.error("sizes must be unique")
     if not formats or len(set(formats)) != len(formats) or set(formats) - set(FORMATS):
         parser.error("formats must be unique supported parser names")
+    if (not measurements or len(set(measurements)) != len(measurements)
+            or set(measurements) - {"parser_only", "common_mapping"}):
+        parser.error("measurements must be unique supported measurement paths")
     if (not re.fullmatch(r"[a-z_][a-z0-9_]*", settings["name_prefix"])
             or settings["name_min_digits"] < 1 or settings["value_period"] < 1
             or settings["value_divisor"] <= 0):
@@ -224,7 +239,8 @@ def main():
         expected = data
         for fmt in formats:
             payload = encode(fmt, data)
-            actual = decode(fmt, payload, count, settings)
+            parsed = parse_native(fmt, payload)
+            actual = to_common_mapping(fmt, parsed, count, settings)
             if actual != expected:
                 raise AssertionError(f"{fmt} did not reproduce the canonical structure at size {count}")
             if get("execution.outputs.export_smallest") and not exported_documents:
@@ -232,32 +248,46 @@ def main():
                 write_if_changed(
                     args.documents_dir / f"parameters_{count}.{extensions[fmt]}", payload
                 )
-            median, iqr, loops = measure(
-                lambda: decode(fmt, payload, count, settings), args.samples, args.warmups,
-                args.target_ms, args.max_loops
-            )
-            rows.append({
-                "run_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                "format": fmt,
-                "parameters": count,
-                "payload_bytes": len(payload.encode("utf-8")),
-                "median_seconds": median,
-                "iqr_seconds": iqr,
-                "loops_per_sample": loops,
-                "samples": args.samples,
-                "warmups": args.warmups,
-                "target_ms": args.target_ms,
-                "python_version": platform.python_version(),
-                "implementation": platform.python_implementation(),
-                "platform": platform_label(),
-                "json_parser": f"stdlib/{platform.python_version()}",
-                "yaml_parser": f"PyYAML/{yaml.__version__}",
-                "toml_parser": f"tomllib/{platform.python_version()}",
-                "scinumtools3_version": (f"{scinumtools3.__version__} (local)"
-                                          if os.environ.get("SNT_BENCH_SOURCE") == "local"
-                                          else scinumtools3.__version__),
-                "status": "PASS",
-            })
+            parser_timing = None
+            for measurement in measurements:
+                if measurement == "parser_only":
+                    timing = measure(
+                        lambda: parse_native(fmt, payload), args.samples, args.warmups,
+                        args.target_ms, args.max_loops
+                    )
+                    parser_timing = timing
+                elif fmt != "dipl" and parser_timing is not None:
+                    # These decoders already return the common Python mapping.
+                    timing = parser_timing
+                else:
+                    timing = measure(
+                        lambda: decode(fmt, payload, count, settings), args.samples, args.warmups,
+                        args.target_ms, args.max_loops
+                    )
+                median, iqr, loops = timing
+                rows.append({
+                    "run_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "measurement": measurement,
+                    "format": fmt,
+                    "parameters": count,
+                    "payload_bytes": len(payload.encode("utf-8")),
+                    "median_seconds": median,
+                    "iqr_seconds": iqr,
+                    "loops_per_sample": loops,
+                    "samples": args.samples,
+                    "warmups": args.warmups,
+                    "target_ms": args.target_ms,
+                    "python_version": platform.python_version(),
+                    "implementation": platform.python_implementation(),
+                    "platform": platform_label(),
+                    "json_parser": f"stdlib/{platform.python_version()}",
+                    "yaml_parser": f"PyYAML/{yaml.__version__} safe_load",
+                    "toml_parser": f"tomllib/{platform.python_version()}",
+                    "scinumtools3_version": (f"{scinumtools3.__version__} (local)"
+                                              if os.environ.get("SNT_BENCH_SOURCE") == "local"
+                                              else scinumtools3.__version__),
+                    "status": "PASS",
+                })
         exported_documents = True
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -267,10 +297,17 @@ def main():
         writer.writerows(rows)
 
     args.figure.parent.mkdir(parents=True, exist_ok=True)
-    plot_parsing_results(rows, args.figure, get("execution.outputs.figure_dpi"))
+    common_figure = args.figure.with_name(
+        args.figure.stem + "_common_mapping" + args.figure.suffix
+    )
+    plot_parsing_results(rows, args.figure, "parser_only", get("execution.outputs.figure_dpi"))
+    plot_parsing_results(rows, common_figure, "common_mapping",
+                         get("execution.outputs.figure_dpi"))
     print(f"Results: {args.output}")
-    print(f"Figure:  {args.figure}")
-    print(pd.DataFrame(rows)[["format", "parameters", "payload_bytes", "median_seconds", "status"]]
+    print(f"Parser-only figure: {args.figure}")
+    print(f"Common-mapping figure: {common_figure}")
+    print(pd.DataFrame(rows)[["measurement", "format", "parameters", "payload_bytes",
+                              "median_seconds", "status"]]
           .to_string(index=False, formatters={"median_seconds": lambda value: f"{value * 1e3:.3f} ms"}))
 
 

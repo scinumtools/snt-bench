@@ -11,6 +11,7 @@ From the repository root:
 ```sh
 ./setup.sh --benchmark pyserial
 ./setup.sh --benchmark pyserial --size 10 --size 100 --format json --format dipl
+./setup.sh --benchmark pyserial --measurement parser_only
 ./setup.sh --benchmark pyserial --samples 7 --target-ms 20
 ./setup.sh --benchmark pyserial --config path/to/custom.dip
 ./setup.sh --benchmark pyserial --source local
@@ -20,18 +21,31 @@ The first pinned run creates an isolated Python environment and installs the ver
 
 ## What is measured
 
-Document generation occurs before timing. Each timed call decodes an in-memory string; DIPL additionally reads evaluated leaf nodes into the common Python mapping. This is a **decode-to-common-structure** comparison of these implementations. It does not isolate parser internals, include disk I/O, or test DIPL units, constraints, references, and derived expressions. Encoded byte counts are reported to make document-size differences visible.
+Document generation occurs before timing; each timed call decodes an in-memory string. The two figures compare these paths:
+
+- **Parser output only:** each library returns its native result. JSON, YAML, and TOML return Python mappings. DIPL returns its parsed and evaluated environment without walking its nodes to build the benchmark's mapping.
+- **Decode to common Python mapping:** each result is represented as the same nested mapping. JSON, YAML, and TOML already return that structure, so their measurements are the same parse call. DIPL additionally selects its evaluated leaf nodes and constructs the Python mapping.
+
+“Parser output only” still includes DIPL's normal parsing, type handling, and evaluation; it does not time lexer or parser internals in isolation. Neither path includes document generation or disk I/O, and the suite does not exercise DIPL units, constraints, references, or derived expressions. Encoded byte counts remain in the CSV for context.
 
 The default quick method uses two warmups and five samples per format and size, calibrating loops toward 10 ms per sample. A decode longer than the target is timed once per sample. Medians and interquartile ranges appear in the CSV. The [reference results](results/README.md) and figure are from one macOS arm64 process; they are an initial comparison, and measurements on other hardware or independent processes may differ.
 
 ## Reference figure and analysis
 
-The reference figure and data use SNT3 0.9.11. All 16 parser/size combinations passed exact equality checks. DIPL medians were 0.484 ms for 10 parameters, 3.44 ms for 100, 33.4 ms for 1,000, and 458 ms for 10,000. Compared with the 0.9.10 quick reference, the smallest case was faster, while the three larger cases were about 10–20% slower. These are short single-process timings and do not establish a scaling regression; repeatable pyperf measurements are needed to distinguish parser changes from quick-run variation.
+The reference figures use SNT3 0.9.11, Python 3.13.15, and the versions in [`config.dip`](config.dip). All 16 format/size combinations passed equality checks. At 10,000 parameters, parser-output medians were 1.52 ms for JSON, 26.71 ms for TOML, 263.03 ms for PyYAML `safe_load`, and 347.07 ms for DIPL. DIPL is already slower at the native parser-output stage, so the extra mapping work cannot account for the overall gap. Quick results are single-process measurements; use repeated pyperf runs before making stable speed claims.
 
-![Reference parsing times by parameter count and encoded document size](results/reference-quick.png)
+### Parser-output-only comparison
 
-The figure legend names each parser and shows its pinned package version; the standard-library parsers are labeled with the Python version.
+This is the single figure shown in the main README. It times each parser through its native result. DIPL still performs its normal parse, type handling, and evaluation, but the benchmark does not traverse the resulting nodes to create a second Python mapping.
+
+![Parser-output-only times by parameter count for JSON, YAML, TOML, and DIPL](results/reference-quick.png)
+
+### Decode-to-common-mapping comparison
+
+The JSON, YAML, and TOML paths already return the common Python mapping, so their values match the parser-output-only figure. DIPL additionally selects evaluated leaf nodes and creates that mapping. At 10,000 parameters, this step raises DIPL's median from 347.07 ms to 373.43 ms (about 7.6%). It contributes some overhead, but DIPL's parser-output time is already much higher than the other parser times.
+
+![Decode-to-common-mapping times by parameter count for JSON, YAML, TOML, and DIPL](results/reference-common-mapping.png)
 
 The [full CSV](results/reference-quick.csv) and [effective configuration](results/reference-quick.config.json) contain the measurements and environment for this figure.
 
-JSON has the lowest median at all four parameter counts in this run. At 10,000 parameters, the medians are 1.91 ms for JSON, 34.41 ms for TOML, 336.69 ms for YAML, and 457.53 ms for DIPL. The encoded documents at that size range from 139 kB for TOML to 239 kB for DIPL. DIPL's timed path includes evaluating typed nodes and extracting them into the shared Python mapping, so the result includes more work than a direct dictionary decode. The DIPL 10,000-parameter case had a 31 ms interquartile range. Treat these as measurements of the selected parsers and workload on one machine, not a general ranking of the data formats.
+The results compare these selected implementations, not intrinsic format speeds. The pinned JSON decoder uses CPython's standard-library path; PyYAML uses `safe_load`; TOML uses `tomllib.loads`. DIPL parsing produces a typed, evaluated environment. Parser versions, document sizes, and native result models differ, so interpret the figures as an implementation comparison for this workload, not a universal ranking of JSON, YAML, TOML, and DIPL.

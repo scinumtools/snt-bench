@@ -1,0 +1,161 @@
+# Configuration and provenance for the typed-configuration loading comparison.
+typed_config
+  execution
+    target
+      source str = "pinned"
+        ?descr "SNT3 source: pinned PyPI release or the local checkout."
+
+    environment
+      python_base str = "python3.13"
+        ?descr "Interpreter for the isolated pinned Python environment."
+
+      local_python_base str = "python3.14"
+        ?descr "Interpreter matching the local SNT3 Python extension ABI."
+
+    paths
+      local_repo str = "../scinumtools3"
+        ?descr "SNT3 checkout containing the local Python binding."
+
+    selection
+      formats str[:] = ["json", "yaml", "toml", "dipl"]
+        ?descr "Input formats to compare; each carries the same scientific configuration values."
+
+      parameter_counts int[:] = [10, 100, 1000]
+        ?descr "Number of floating-point entries in the generated parameter map."
+
+    outputs
+      results_dir str = "benchmarks/typed-config/results"
+        ?descr "Directory for timestamped CSV, figure, and effective configuration snapshot."
+
+      figure_dpi int = 300
+        ?descr "Resolution of the saved comparison figure."
+
+  workload
+    model
+      name str = "run-001"
+        ?descr "Configuration identifier, checked against the same lowercase identifier pattern."
+
+      default_label str = "baseline"
+        ?descr "Label omitted from the input and populated by each participant's native default mechanism."
+
+      name_pattern str = "^[a-z][a-z0-9-]{2,31}$"
+        ?descr "Regular expression applied to the configuration name by DIPL and the Pydantic adapter."
+
+      mode str = "transient"
+        ?descr "Selected simulation mode; restricted to the configured allowed values."
+
+      allowed_modes str[:] = ["steady", "transient"]
+        ?descr "Allowed values for the mode field."
+
+      steps int = 100
+        ?descr "Number of simulation steps; must be in the configured inclusive range."
+
+      minimum_steps int = 1
+        ?descr "Inclusive lower bound for simulation steps."
+
+      maximum_steps int = 10000
+        ?descr "Inclusive upper bound for simulation steps."
+
+      minimum_grid_count int = 0
+        ?descr "Exclusive lower bound for each grid dimension."
+
+      minimum_timestep float = 0.0
+        ?descr "Exclusive lower bound for timestep in seconds."
+
+      minimum_grid_spacing float = 0.0
+        ?descr "Exclusive lower bound for grid spacing in metres."
+
+      timestep float = 0.00025
+        ?descr "Time increment in seconds; must be positive."
+
+      grid_nx int = 64
+        ?descr "Grid cells along the x direction; must be positive."
+
+      grid_ny int = 32
+        ?descr "Grid cells along the y direction; must be positive."
+
+      grid_spacing_m float = 0.01
+        ?descr "Grid spacing in metres; must be positive."
+
+      parameter_prefix str = "p"
+        ?descr "Prefix for generated named floating-point parameters."
+
+      parameter_digits int = 5
+        ?descr "Minimum zero-padded width for generated parameter indices."
+
+      value_period int = 1000
+        ?descr "Modulo period for repeatable generated parameter values."
+
+      value_divisor float = 10.0
+        ?descr "Divisor for generated parameter values."
+
+  timing
+    quick
+      samples int = 5
+        ?descr "Timed samples for each format and input size."
+
+      warmups int = 2
+        ?descr "Untimed calls before loop calibration."
+
+      target_ms float = 10.0
+        ?descr "Target duration of each calibrated timing sample."
+
+      max_loops int = 1000000
+        ?descr "Maximum repeated calls per timed sample."
+
+  packages
+    scinumtools3
+      version str = "0.9.11"
+        ?descr "Pinned SNT3 release providing DIPL parsing and evaluation."
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.11/"
+
+      website str = "https://github.com/scinumtools/snt3"
+        ?descr "SNT3 project home."
+
+    pydantic
+      version str = "2.14.1"
+        ?descr "Pinned Python model-validation implementation used with JSON, YAML, and TOML."
+        ?rationale "Release: https://pypi.org/project/pydantic/2.14.1/"
+
+      website str = "https://github.com/pydantic/pydantic"
+        ?descr "Pydantic project home and documentation."
+
+    pyyaml
+      version str = "6.0.3"
+        ?descr "Pinned PyYAML safe parser used before model validation."
+        ?rationale "Release: https://pypi.org/project/PyYAML/6.0.3/"
+
+      website str = "https://pyyaml.org/"
+        ?descr "PyYAML project home."
+
+    pint
+      version str = "0.26.2"
+        ?descr "Pinned Pint release used to parse and normalize unit-bearing strings for the non-DIPL formats."
+        ?rationale "Release: https://pypi.org/project/Pint/0.26.2/"
+
+      website str = "https://pint.readthedocs.io/"
+        ?descr "Pint documentation for units and quantities."
+
+    matplotlib
+      version str = "3.11.2"
+        ?descr "Pinned plotting dependency for result figures."
+        ?rationale "Release: https://pypi.org/project/matplotlib/3.11.2/"
+
+      website str = "https://matplotlib.org/"
+        ?descr "Matplotlib project home."
+
+  provenance
+    dipl_docs str = "https://github.com/scinumtools/snt3/blob/main/docs/source/dipl/index.rst"
+      ?descr "DIPL language documentation for types, constraints, defaults, references, and derived expressions."
+
+    pydantic_docs str = "https://pydantic.dev/docs/validation/latest/"
+      ?descr "Pydantic documentation for typed models, validation constraints, and computed fields."
+
+    json_docs str = "https://docs.python.org/3.13/library/json.html"
+      ?descr "Python standard-library JSON parser documentation."
+
+    toml_docs str = "https://docs.python.org/3.13/library/tomllib.html"
+      ?descr "Python standard-library TOML parser documentation."
+
+    yaml_docs str = "https://pyyaml.org/wiki/PyYAMLDocumentation"
+      ?descr "PyYAML safe loader documentation."

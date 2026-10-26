@@ -1,0 +1,38 @@
+{
+  "config_path": "benchmarks/schema-validation/config.dip",
+  "config_sha256": "c1a9fcb694e425b0570c95497c1731791e3e2d5ec82d7f298d63c1e2616181e8",
+  "method": "in-process Python APIs; no subprocess launched by the timed operation",
+  "participants": {
+    "dipl": "0.9.11 (local)",
+    "jsonschema": "4.26.0"
+  },
+  "snt_source": "local",
+  "snt_local_revision": "c4be01155b7a8f4913bea5ce6c2dcd2ad66609f5",
+  "snt_local_worktree_status": [
+    " M benchmarks/CMakeLists.txt",
+    " M benchmarks/dip/README.md",
+    " M include/snt/dip/lists/list_hierarchy.h",
+    " M setup.sh",
+    " M src/snt/dip/dip.cpp",
+    " M src/snt/dip/lists/list_branching.cpp",
+    " M src/snt/dip/lists/list_hierarchy.cpp",
+    " M src/snt/dip/nodes/node_group.cpp",
+    " M src/snt/dip/nodes/parser.cpp",
+    "?? benchmarks/dip/schema_map_benchmark.cpp"
+  ],
+  "snt_local_diff_sha256": "a84e154479945a8fc706831de9bbb50ade48330bc9f929748172cf6e4791be5a",
+  "case_ids": [
+    "valid/steady",
+    "valid/transient",
+    "invalid/missing-required",
+    "invalid/wrong-type",
+    "invalid/enum",
+    "invalid/range",
+    "invalid/pattern",
+    "invalid/nested-bound"
+  ],
+  "samples": 100,
+  "warmups": 10,
+  "python_version": "3.14.8",
+  "platform": "macOS-arm64"
+}

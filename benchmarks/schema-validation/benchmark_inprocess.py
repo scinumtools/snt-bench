@@ -31,6 +31,7 @@ from benchmark import (
     write_csv,
 )
 from scinumtools3.dip import DIP
+import scinumtools3
 
 
 HERE = Path(__file__).resolve().parent
@@ -144,11 +145,13 @@ def main():
     }
     prepare_fixtures(cases, paths)
 
+    local_source = os.environ.get("SNT_BENCH_SOURCE") == "local"
+    snt_version = scinumtools3.__version__ if local_source else importlib.metadata.version("scinumtools3")
     versions = {
-        "dipl": importlib.metadata.version("scinumtools3"),
+        "dipl": f"{snt_version} (local)" if local_source else snt_version,
         "jsonschema": importlib.metadata.version("jsonschema"),
     }
-    if versions["dipl"] != str(get("packages.scinumtools3.version")):
+    if snt_version != str(get("packages.scinumtools3.version")):
         raise SystemExit(f"Requires scinumtools3=={get('packages.scinumtools3.version')}; found {versions['dipl']}")
     if versions["jsonschema"] != str(get("packages.jsonschema.version")):
         raise SystemExit(f"Requires jsonschema=={get('packages.jsonschema.version')}; found {versions['jsonschema']}")
@@ -233,6 +236,10 @@ def main():
         "config_sha256": hashlib.sha256(config_text.encode()).hexdigest(),
         "method": "in-process Python APIs; no subprocess launched by the timed operation",
         "participants": versions,
+        "snt_source": "local" if local_source else "pinned",
+        "snt_local_revision": os.environ.get("SNT_BENCH_LOCAL_REVISION"),
+        "snt_local_worktree_status": json.loads(os.environ.get("SNT_BENCH_LOCAL_STATUS", "[]")),
+        "snt_local_diff_sha256": os.environ.get("SNT_BENCH_LOCAL_DIFF_SHA256"),
         "case_ids": [item["id"] for item in cases],
         "samples": samples,
         "warmups": warmups,

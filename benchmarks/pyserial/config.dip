@@ -21,6 +21,9 @@ pyserial
       formats str[:] = ["json", "yaml", "toml", "dipl"]
         ?descr "Python parser implementations to run; all selected formats represent the same values."
 
+      measurements str[:] = ["parser_only", "common_mapping"]
+        ?descr "Timed paths: native parser output only, and conversion to the common Python mapping."
+
       parameter_counts int[:] = [10, 100, 1000, 10000]
         ?descr "Numbers of named float parameters in the generated experiment mapping."
 

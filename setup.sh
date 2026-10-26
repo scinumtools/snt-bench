@@ -49,6 +49,20 @@ case "$benchmark" in
     done
     exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/schema-validation/run.py" "${schema_args[@]}"
     ;;
+  typed-config)
+    typed_args=()
+    for ((index=0; index<${#args[@]}; index++)); do
+      case "${args[index]}" in
+        -b|--benchmark) ((index+=1)) ;;
+        --benchmark=*) ;;
+        *) typed_args+=("${args[index]}") ;;
+      esac
+    done
+    if ((${#typed_args[@]})); then
+      exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/typed-config/run.py" "${typed_args[@]}"
+    fi
+    exec "${PYTHON_LAUNCHER:-python3}" "$repo_dir/benchmarks/typed-config/run.py"
+    ;;
   unit-conversion-accuracy|uncertainty-propagation)
     numerical_args=()
     for ((index=0; index<${#args[@]}; index++)); do

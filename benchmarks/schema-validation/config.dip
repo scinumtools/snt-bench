@@ -1,9 +1,20 @@
 # Reproducible controls and provenance for the schema-validation comparison.
 schema_validation
   execution
+    target
+      source str = "pinned"
+        ?descr "SNT3 source for the in-process DIPL participant: pinned package or local checkout."
+
     environment
       python_base str = "python3.13"
         ?descr "Interpreter used to create the isolated pinned Python environment."
+
+      local_python_base str = "python3.14"
+        ?descr "Interpreter matching the ABI of the local SNT3 Python extension."
+
+    local
+      repo str = "../scinumtools3"
+        ?descr "SNT3 source checkout used when execution.target.source is local."
 
     paths
       cases_file str = "benchmarks/schema-validation/cases.json"

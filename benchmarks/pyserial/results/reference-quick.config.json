@@ -1,12 +1,16 @@
 {
   "config_path": "benchmarks/pyserial/config.dip",
-  "config_sha256": "fc26e58b1e388d0594c7ff7e3f5f19f289426db4afc767ccd9c14b94df1d247e",
+  "config_sha256": "b9096d3cd72e97e53e864218808b94230acce6b0920c0de3a9d2e39c7e6e8227",
   "settings": {
     "formats": [
       "json",
       "yaml",
       "toml",
       "dipl"
+    ],
+    "measurements": [
+      "parser_only",
+      "common_mapping"
     ],
     "snt_source": "pinned",
     "parameter_counts": [
@@ -71,9 +75,9 @@
     "--config",
     "benchmarks/pyserial/config.dip",
     "--output",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T183811Z_18063.csv",
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T190337Z_19242.csv",
     "--figure",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T183811Z_18063.png"
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T190337Z_19242.png"
   ],
   "python": "python"
 }
