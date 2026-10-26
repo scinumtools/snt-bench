@@ -2,6 +2,8 @@
 
 Official benchmark and comparison repository for [SciNumTools3 (SNT3)](https://github.com/scinumtools/snt3).
 
+All published figures and results use the pinned versions recorded with each benchmark. Local SNT3 checkouts are for debugging and are not used for the published references.
+
 ## Benchmarks
 
 - [Unit conversion accuracy](benchmarks/unit-conversion-accuracy/README.md)
@@ -62,10 +64,8 @@ End-to-end loading of equivalent scientific settings, including typed validation
 
 ## Schema and configuration validation
 
-Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. The CLI figure shows all four participants; the in-process figure isolates the Python APIs for DIPL and JSON Schema. In the latest local SNT3 run, DIPL's batch times are relatively close to JSON Schema's, though still higher. The two methods use different timing scopes and should be compared separately.
+Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. The figure uses the pinned benchmark results: the native CLI panel includes all four participants, and the in-process Python API panel compares pinned DIPL and JSON Schema. The two timing panels use different scopes and should be compared separately.
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 
-![Schema validation native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](benchmarks/schema-validation/results/schema_validation_20261025T120518Z.png)
-
-![Local in-process Python API batch timings for DIPL 0.9.11 and JSON Schema 4.26.0](benchmarks/schema-validation/results/schema_validation_inprocess_20261026T213913Z.png)
+![Pinned schema validation timings in two panels: native CLI workflows for DIPL, JSON Schema, CUE, and Pkl; and in-process Python APIs for DIPL and JSON Schema](benchmarks/schema-validation/results/schema_validation_pinned_combined_20261026.png)

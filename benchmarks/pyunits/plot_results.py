@@ -76,6 +76,7 @@ def main():
     metadata = None
     library_versions = {}
     seen_numpy_cases = set()
+    conversion_sharing = defaultdict(list)
     with args.input.open(newline="") as csv_file:
         reader = csv.DictReader(csv_file)
         matrix_format = "group" in (reader.fieldnames or ())
@@ -89,6 +90,13 @@ def main():
                 library_versions["snt"] = row["scinumtools3_version"]
             if matrix_format:
                 case_id = row["case_id"]
+                sharing = row.get("conversion_shares_input", "")
+                if (sharing and row.get("group") == "conversion"
+                        and row.get("operation") == "same"
+                        and row.get("input_kind") == "ndarray"):
+                    conversion_sharing[row["library"]].append(
+                        (int(row["elements"]), sharing.lower() == "true")
+                    )
                 baseline = row.get("numpy_median_seconds")
                 if baseline and case_id not in seen_numpy_cases:
                     grouped[(operation_label(row), "numpy")].append(
@@ -118,9 +126,9 @@ def main():
         parser.error(f"No supported library timings found in {args.input}")
 
     operations = list(dict.fromkeys(label for label, _ in grouped))
-    columns = 4
+    columns = min(4, len(operations))
     rows = (len(operations) + columns - 1) // columns
-    fig, axes = plt.subplots(rows, columns, figsize=(16, rows * 3.1),
+    fig, axes = plt.subplots(rows, columns, figsize=(max(6.5, columns * 4), rows * 3.1),
                              layout="constrained", squeeze=False)
     flat_axes = [axis for row in axes for axis in row]
     for index, operation in enumerate(operations):
@@ -160,6 +168,20 @@ def main():
                 markersize=4,
                 alpha=0.95,
             )
+        if operation == "Conversion: same" and any(conversion_sharing.values()):
+            for library, points in conversion_sharing.items():
+                for elements, shared in points:
+                    if shared:
+                        ax.scatter(elements, next(y for x, y in grouped[(operation, library)] if x == elements),
+                                   marker="D", s=44, color=LIBRARY_COLORS[library],
+                                   edgecolors="white", linewidths=0.6, zorder=5)
+                    else:
+                        ax.scatter(elements, next(y for x, y in grouped[(operation, library)] if x == elements),
+                                   marker="x", s=48, color=LIBRARY_COLORS[library],
+                                   linewidths=1.7, zorder=5)
+            ax.text(0.03, 0.04, "Storage: ◆ shared   × independent",
+                    transform=ax.transAxes, fontsize=8, color="#333333",
+                    bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.8, "pad": 2})
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_title(operation, color="#222222", fontsize=10)

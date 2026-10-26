@@ -269,7 +269,7 @@ def prepare(case, library, raw):
     data = float(raw[0]) if case.input_kind == "scalar" else raw
     if case.group == "construction":
         source = raw.tolist() if case.input_kind == "list" else data
-        return lambda: make(library, source, "m"), data if case.input_kind == "scalar" else raw, "m"
+        return lambda: make(library, source, "m"), data if case.input_kind == "scalar" else raw, "m", None
 
     if case.group == "conversion":
         source_unit = "degC" if case.operation == "temperature" else "m/s" if case.operation == "compound" else "m"
@@ -277,7 +277,7 @@ def prepare(case, library, raw):
         quantity = make(library, data, source_unit)
         expected = {"same": data, "scaled": data * 1_000,
                     "compound": data * 3.6, "temperature": data + 273.15}[case.operation]
-        return lambda: convert(library, quantity, target), expected, target
+        return lambda: convert(library, quantity, target), expected, target, quantity
 
     if case.operation in ("sqrt", "np_sqrt"):
         quantity = make(library, data * data, "m2")
@@ -288,30 +288,30 @@ def prepare(case, library, raw):
             operation = lambda: quantity ** 0.5
         else:
             operation = lambda: np.sqrt(quantity)
-        return operation, data, "m"
+        return operation, data, "m", None
     if case.operation == "np_sum":
         quantity = make(library, data, "m")
-        return lambda: np.sum(quantity), float(np.sum(data)), "m"
+        return lambda: np.sum(quantity), float(np.sum(data)), "m", None
 
     left = make(library, data, "m")
     if case.operation in ("add_equal", "np_add"):
         right = make(library, data * 2, "m")
         operation = (lambda: left + right) if case.operation == "add_equal" else (lambda: np.add(left, right))
-        return operation, data * 3, "m"
+        return operation, data * 3, "m", None
     if case.operation == "add_compatible":
         right = make(library, data * 100, "cm")
-        return lambda: left + right, data * 2, "m"
+        return lambda: left + right, data * 2, "m", None
     if case.operation == "subtract_equal":
         right = make(library, data * 0.25, "m")
-        return lambda: left - right, data * 0.75, "m"
+        return lambda: left - right, data * 0.75, "m", None
     if case.operation == "multiply":
         right = make(library, data, "s")
-        return lambda: left * right, data * data, "m*s"
+        return lambda: left * right, data * data, "m*s", None
     if case.operation == "divide":
         right = make(library, data * 0.5, "s")
-        return lambda: left / right, np.full_like(data, 2.0) if isinstance(data, np.ndarray) else 2.0, "m/s"
+        return lambda: left / right, np.full_like(data, 2.0) if isinstance(data, np.ndarray) else 2.0, "m/s", None
     if case.operation == "square":
-        return lambda: left * left, data * data, "m2"
+        return lambda: left * left, data * data, "m2", None
     raise ValueError(case)
 
 
@@ -434,7 +434,7 @@ for case_index, case in enumerate(selected_cases):
     library_order = selected_libraries[offset:] + selected_libraries[:offset]
     if args.worker and not args.quick:
         for library in library_order:
-            operation, _, _ = prepare(case, library, raw)
+            operation, _, _, _ = prepare(case, library, raw)
             runner.bench_func(
                 f"{case.id}/{library}", operation,
                 metadata={"case_id": case.id, "library": library},
@@ -462,14 +462,15 @@ for case_index, case in enumerate(selected_cases):
             "minimum_sample_seconds": args.quick_target_seconds if args.quick else args.min_time,
             "numpy_median_seconds": baseline_median,
             "status": "UNSUPPORTED" if case.operation in UNSUPPORTED.get(library, ()) else "PASS",
-            "shares_input": None, "peak_rss_delta_bytes": None,
+            "shares_input": None, "conversion_shares_input": None,
+            "peak_rss_delta_bytes": None,
             "max_absolute_error": None,
             "median_seconds": None, "iqr_seconds": None,
             "min_seconds": None, "max_seconds": None,
             "loops_per_sample": None, "overhead_vs_numpy": None,
         }
         if row["status"] == "PASS":
-            operation, expected, target_unit = prepare(case, library, raw)
+            operation, expected, target_unit, input_quantity = prepare(case, library, raw)
             result = operation()
             normalized = convert(library, result, target_unit)
             row["max_absolute_error"] = check_values(case.id + "/" + library,
@@ -479,6 +480,10 @@ for case_index, case in enumerate(selected_cases):
             if case.group == "construction" and case.input_kind == "ndarray":
                 public_array = result.to_numpy() if library == "snt" else magnitude(library, result)
                 row["shares_input"] = bool(np.shares_memory(raw, public_array))
+            if case.group == "conversion" and case.input_kind == "ndarray":
+                input_array = input_quantity.to_numpy() if library == "snt" else magnitude(library, input_quantity)
+                result_array = result.to_numpy() if library == "snt" else magnitude(library, result)
+                row["conversion_shares_input"] = bool(np.shares_memory(input_array, result_array))
             if args.quick:
                 samples, loops = measure_quick(operation)
                 benchmark = None
@@ -592,7 +597,8 @@ if not args.skip_memory and (df["group"] == "construction").any():
     memory = memory[["input_kind", "elements", *selected_libraries]]
     print("Construction: extra peak resident memory in a fresh process (MiB)")
     print(memory.to_string(index=False, formatters={name: "{:.2f}".format for name in selected_libraries}))
-print("shares_input reports whether the public array aliases the input NumPy array.")
+print("shares_input reports construction aliasing with the original NumPy input.")
+print("conversion_shares_input reports whether a converted ndarray quantity aliases its source quantity.")
 print(f"Summary CSV: {args.csv_output}")
 print(f"Raw samples CSV: {samples_output}")
 if not args.quick:

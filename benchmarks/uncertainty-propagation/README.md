@@ -9,9 +9,10 @@ seed, coverage targets, tolerances, and output settings are read from
 
 ## Cases and interpretation
 
-Monte Carlo summaries use the fixed NumPy seed. Most inputs are normal; the
-rectangular case uses a uniform input and the correlation case uses a bivariate
-normal. Each row records the package result and uncertainty, closed-form
+The independent reference draws use the fixed NumPy seed. Local SNT3 and
+MetroloPy Monte Carlo tracks use the same configured seed and sample count with
+their own random engines. Most inputs are normal; the rectangular cases use
+uniform inputs and the correlation case uses a bivariate normal. Each row records the package result and uncertainty, closed-form
 reference standard deviation, Monte Carlo mean and standard deviation, central
 95% Monte Carlo interval, and observed coverage of the reported
 `estimate ± uncertainty` interval. Error columns show uncertainty error versus
@@ -24,7 +25,9 @@ coverage relative to the normal one-standard-deviation reference (68.27%).
 | `addition` | Add independent normal metre quantities; checks root-sum-square uncertainty propagation. |
 | `product` | Multiply independent normal metre and second quantities; compares propagated uncertainty with the exact product-distribution standard deviation. |
 | `reciprocal` | Propagate uncertainty through `1/x`; compares first-order propagation with Monte Carlo. The normal input is centered 40 standard deviations from zero. |
+| `reciprocal_uniform` | Reciprocal of a bounded positive uniform input; tests skewed output without a singularity or infinite variance. |
 | `square_nonlinear` | Square a normal input with a large relative uncertainty; compares first-order output uncertainty and nominal value with the exact output moments and Monte Carlo. |
+| `sqrt_uniform_boundary` | Square root of a uniform squared-length input whose support touches zero; tests a nonlinear boundary and the resulting output bias and spread. |
 | `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. SNT3 0.9.11 propagates the configured correlation through source-aware first-order sensitivities. |
 | `rectangular_linear` | Compare a uniform Monte Carlo input with library inputs carrying the same mean and standard deviation; shows how a one-standard-deviation interval's coverage depends on distribution shape. |
 
@@ -41,6 +44,11 @@ is documented by [`uncertainties`](https://uncertainties.readthedocs.io/en/lates
 MetroloPy's
 [`gummy` quantities](https://nrc-cnrc.github.io/MetroloPy/_build/html/metrolopy.html)
 support first-order propagation, correlated inputs, and distribution objects.
+The pinned release also documents native sampling through
+[`gummy.simulate`](https://nrc-cnrc.github.io/MetroloPy/_build/html/hand_made_doc.html).
+Pint's documented uncertainty integration uses `uncertainties`
+([Pint 0.26.2 overview](https://pint.readthedocs.io/en/0.26.2/getting/overview.html));
+the benchmark's shared NumPy sampling path is separate from Pint's API.
 For the rectangular case, each package receives the same nominal value and
 standard deviation; the uniform distribution is used only for the Monte Carlo
 reference, so this case measures propagation behavior and interval coverage,
@@ -50,6 +58,20 @@ reported interval coverage is descriptive: a uniform distribution does not
 have the normal 68.27% coverage within ±1 standard deviation.
 
 ## Results
+
+Local SNT3 runs can include two PUQ tracks, selected by
+`execution.local_snt_tracks` in [`config.dip`](config.dip): the fast ordinary
+first-order propagation path, and the new `Quantity.monte_carlo` path. Both use
+the same configured input models; the Monte Carlo path uses the configured
+sample count, seed, and 95% interval coverage. The figure labels their separate
+coverage targets: normal ±1σ coverage for the fast path and central 95%
+coverage for the Monte Carlo path. The latter is available only with a local
+checkout that includes the API; pinned releases continue to show the
+cross-library fast-path comparison. MetroloPy also exposes a native simulation
+API, so its Monte Carlo track is included for the two new bounded nonlinear
+cases when `execution.metrolopy_monte_carlo` is enabled. Pint provides
+uncertainty integration through `uncertainties`, while Monte Carlo sampling is
+performed by the benchmark's NumPy reference path rather than by a Pint API.
 
 ![Uncertainty ratio and observed coverage with Monte Carlo confidence intervals](results/reference-quick.png)
 

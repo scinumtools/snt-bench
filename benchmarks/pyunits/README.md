@@ -89,6 +89,21 @@ To rerun one measurement, pass one or more quoted `--case` globs and optional `-
 
 The figure legend includes the library versions pinned for this reference run.
 
+### Same-unit conversion and storage sharing
+
+The matrix now checks whether the converted ndarray quantity's public value array shares memory with the source quantity. A focused quick run on macOS arm64, Python 3.13.15 produced these same-unit conversion results (median time; observed storage behavior):
+
+| Library | 3 values | 1,000 values | 1,000,000 values |
+|---|---:|---:|---:|
+| SNT 0.9.11 | 2.01 µs · independent | 1.99 µs · independent | 268.80 µs · independent |
+| Pint 0.26.2 | 4.21 µs · shared | 4.28 µs · shared | 4.21 µs · shared |
+| unyt 3.2.0 | 3.75 µs · independent | 4.27 µs · independent | 197.23 µs · independent |
+| Astropy 8.0.2 | 3.11 µs · independent | 3.32 µs · independent | 189.59 µs · independent |
+
+“Shared” means `numpy.shares_memory` found overlapping public value arrays; “independent” means it did not. The result makes the performance tradeoff visible: Pint's same-unit result reuses storage and stays nearly constant in this case, while SNT returns independently stored data and its cost grows with array size. These are quick measurements, not a pyperf comparison. The [recorded measurements](results/conversion-storage-sharing.csv) include timestamps and per-library values. Subsequent matrix runs record this in `conversion_shares_input` for all ndarray conversion cases.
+
+![Same-unit conversion times with storage-sharing markers](results/conversion-storage-sharing.png)
+
 The figure shows median time per operation; the dotted NumPy trace is a unitless numeric baseline. See the [full results CSV](results/reference-quick.csv), [raw samples](results/reference-quick_samples.csv), and [effective configuration](results/reference-quick.config.json) for the measurements and environment.
 
 The reference quick run uses SNT3 0.9.11 and passed all correctness checks. Compared with the 0.9.10 reference, 24 of 60 SNT case medians were lower and 36 were higher; the median per-case time ratio was 1.05, so the full quick matrix does not show a broad aggregate speedup. The important change is in array math: at 1,000 elements, divide fell from 9.17 µs to 0.78 µs, arithmetic square root from 9.41 µs to 0.77 µs, and NumPy square root from 9.93 µs to 1.40 µs. At one million elements, divide fell from 9.43 ms to 0.60 ms, arithmetic square root from 9.15 ms to 0.41 ms, and NumPy square root from 9.14 ms to 0.42 ms—roughly 16–22× faster in these cases. These are five-sample, single-process quick measurements on the same macOS arm64/Python 3.13.15 environment. They strongly indicate that the 0.9.10 array-math slowdown is resolved, but focused pyperf runs are needed to confirm the size of the gains.
@@ -102,7 +117,7 @@ The 0.9.11 source includes [DIPL parser optimization](https://github.com/scinumt
 
 This is a screening run, not a full pyperf matrix. The workflow log includes pyperf instability warnings for some cases, so treat the rank counts as descriptive of this run. The [generated summary](results/github-pyperf-40137348007.summary.md), [CSV](results/github-pyperf-40137348007.csv), [per-sample CSV](results/github-pyperf-40137348007_samples.csv), [raw pyperf data](results/github-pyperf-40137348007.pyperf.json), and [effective configuration](results/github-pyperf-40137348007.config.json) are archived with the figure. The [GitHub artifact](https://github.com/scinumtools/snt-bench/actions/runs/40137348007/artifacts/12577287123) contains the original uploaded files and is retained for 90 days.
 
-Every matrix case has an equivalent plain NumPy operation as an unranked numeric baseline. Before timing a library case, the script checks value and shape against the expected result after conversion to the target unit. The basic comparison checks values and output units after timing. SNT, Pint, unyt, and Astropy run the matrix; SymPy participates only in the basic scalar workload. Operations start with preconstructed quantities; construction is measured separately.
+Every matrix case has an equivalent plain NumPy operation as an unranked numeric baseline. Before timing a library case, the script checks value and shape against the expected result after conversion to the target unit. The basic comparison checks values and output units after timing. SNT, Pint, unyt, and Astropy run the matrix; SymPy participates only in the basic scalar workload. Operations start with preconstructed quantities; construction is measured separately. For ndarray conversion cases, `conversion_shares_input` records whether the converted quantity's public value array shares memory with the source quantity's public value array (`true` or `false`). This checks observable aliasing through each library's Python API; it does not infer copy-on-write behavior or hidden storage that the API does not expose. Scalar and non-conversion rows leave the field empty. `shares_input` remains the separate construction check against the original NumPy array.
 
 Quick mode uses one process, configurable warmups and timed samples, and a short loop calibrated toward `quick.target_seconds`. It is useful for development feedback. Pyperf mode uses configurable worker processes, values, warmups, and minimum sample time. It stores raw `.pyperf.json`, a summary CSV, and a `_samples.csv` file. The summary reports median time, spread, rank within each case, and run environment. `--skip-memory` omits separate-process construction probes; otherwise `peak_rss_delta_bytes` is the increase in peak resident memory, which is only an approximate memory measure. NumPy input aliasing is reported for array construction.
 

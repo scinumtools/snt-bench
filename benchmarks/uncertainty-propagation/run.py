@@ -180,6 +180,8 @@ def main():
         "seed": get("execution.seed"),
         "cases": args.case if args.case is not None else get("workload.selection.cases"),
         "libraries": args.library if args.library is not None else get("execution.libraries"),
+        "local_snt_tracks": get("execution.local_snt_tracks"),
+        "metrolopy_monte_carlo": get("execution.metrolopy_monte_carlo"),
         "coverage": get("semantics.normal_coverage"),
         "one_sigma_normal_coverage": get("semantics.one_sigma_normal_coverage"),
         "tolerance_relative": get("semantics.tolerance_relative"),

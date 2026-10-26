@@ -45,7 +45,7 @@ For example, `case_ids = ["invalid/*"]` selects all six rejection cases, while `
 
 ## Results
 
-The native CLI figure below is the archived SNT CLI 0.9.10 comparison; a matching 0.9.11 CLI executable was not available in this environment. The in-process DIPL results below use the pinned Python package 0.9.11.
+The full four-participant CLI figure below uses the pinned SNT CLI 0.9.10 run. The in-process figure reports the pinned Python-package run with DIPL 0.9.11. These are the published reference results.
 
 [Correctness matrix](results/schema_validation_20261025T120518Z_correctness.csv) · [Timing summary](results/schema_validation_20261025T120518Z_summary.csv) · [Per-sample timings](results/schema_validation_20261025T120518Z_samples.csv) · [Effective configuration](results/schema_validation_20261025T120518Z.config.json)
 
@@ -53,7 +53,7 @@ The native CLI figure below is the archived SNT CLI 0.9.10 comparison; a matchin
 
 The correctness matrix runs each of the eight cases separately; all four participants matched the expected outcomes. For timing, each participant receives the same complete set of valid cases (two documents) or invalid cases (six documents) in a single native CLI invocation. The chart reports total time per batch, not per document, so comparisons are between tools within the same fixture class. It shows medians from 20 batches after three warmup batches. Error bars show the observed minimum and maximum, not confidence intervals.
 
-With DIPL 0.9.10, median batch times were 14.57 ms (DIPL), 77.19 ms (JSON Schema), 10.46 ms (CUE), and 12.48 ms (Pkl) for valid inputs; for invalid inputs they were 15.86 ms, 76.07 ms, 10.70 ms, and 13.04 ms, respectively. Compared with the previous DIPL 0.9.8 snapshot, the DIPL medians are modestly lower in this run (about 3–5%); the other participant medians also shifted, underscoring that these are local measurements. This is a more comparable measure of the complete CLI task: every tool validates the same documents, in one process per batch, with one startup cost per batch. It still measures each tool's runtime and CLI integration along with validation. In particular, JSON Schema's Python interpreter startup remains in the time, so these numbers do not establish that its validator is intrinsically slower. Treat this as a local end-to-end CLI comparison; repeated CI runs on a fixed runner are needed before making broad speed claims.
+With DIPL 0.9.10, median batch times were 14.57 ms (DIPL), 77.19 ms (JSON Schema), 10.46 ms (CUE), and 12.48 ms (Pkl) for valid inputs; for invalid inputs they were 15.86 ms, 76.07 ms, 10.70 ms, and 13.04 ms, respectively. Compared with the previous DIPL 0.9.8 snapshot, the DIPL medians are modestly lower in this run (about 3–5%); the other participant medians also shifted, underscoring that these are single-machine measurements. This is a more comparable measure of the complete CLI task: every tool validates the same documents, in one process per batch, with one startup cost per batch. It still measures each tool's runtime and CLI integration along with validation. In particular, JSON Schema's Python interpreter startup remains in the time, so these numbers do not establish that its validator is intrinsically slower. Treat this as an end-to-end CLI comparison; repeated CI runs on a fixed runner are needed before making broad speed claims.
 
 ### In-process Python API results
 
