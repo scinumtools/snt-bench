@@ -51,7 +51,7 @@ The method follows the equivalent-structure and equality-check pattern in [Canop
 
 ## Schema and configuration validation
 
-Feature support and command-line validation timing comparison for DIPL, JSON Schema, CUE, and Pkl, with each capability linked to primary project documentation. All four participants pass the shared eight-case correctness check; the figure compares same-size-per-class native CLI batches over 20 repetitions.
+Feature support and command-line validation timing comparison for DIPL, JSON Schema, CUE, and Pkl, with each capability linked to primary project documentation. All four participants pass the shared eight-case correctness check; the displayed native CLI figure is the archived SNT CLI 0.9.10 run. The benchmark README also reports the pinned SNT 0.9.11 in-process API comparison.
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 

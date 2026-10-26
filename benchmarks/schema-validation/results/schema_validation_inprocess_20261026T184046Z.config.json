@@ -1,11 +1,10 @@
 {
   "config_path": "benchmarks/schema-validation/config.dip",
-  "config_sha256": "b64a09bcbde149f2647a07045f000fe8dce98293c649586dda9b37b8bd92ad4e",
+  "config_sha256": "1d34944ab789b41829c409e21425c7ee1c47160118f43b0dd0b541c03fc6dff2",
+  "method": "in-process Python APIs; no subprocess launched by the timed operation",
   "participants": {
-    "dipl": "0.9.8",
-    "jsonschema": "4.26.0",
-    "cue": "0.17.1",
-    "pkl": "0.32.2"
+    "dipl": "0.9.11",
+    "jsonschema": "4.26.0"
   },
   "case_ids": [
     "valid/steady",
@@ -17,8 +16,8 @@
     "invalid/pattern",
     "invalid/nested-bound"
   ],
-  "samples": 3,
-  "warmups": 1,
+  "samples": 100,
+  "warmups": 10,
   "python_version": "3.13.15",
   "platform": "macOS-arm64"
 }

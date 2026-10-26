@@ -157,14 +157,14 @@ uncertainty_propagation
 
   packages
     snt
-      version str = "0.9.10"
+      version str = "0.9.11"
         ?descr "Pinned SNT3 release whose PUQ uncertainty model is under comparison."
-        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.10/"
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.11/"
 
       website str = "https://github.com/scinumtools/snt3"
         ?descr "SNT3 source repository and project documentation."
 
-      release str = "https://pypi.org/project/scinumtools3/0.9.10/"
+      release str = "https://pypi.org/project/scinumtools3/0.9.11/"
 
     pint
       version str = "0.26.2"

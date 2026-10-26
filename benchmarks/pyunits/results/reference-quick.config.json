@@ -1,6 +1,6 @@
 {
   "config_path": "benchmarks/pyunits/config.dip",
-  "config_sha256": "548fc4b932e56186189bdf714c26bb627422cc3e223515c217baaf468334c5c5",
+  "config_sha256": "bc8e0d4cf8c874deda92d91de14c10a1fd6d6809544e54ed24e0070f94b6392c",
   "settings": {
     "benchmark": "pyunits",
     "source": "pinned",
@@ -41,7 +41,7 @@
   },
   "projects": {
     "snt": {
-      "version": "0.9.10",
+      "version": "0.9.11",
       "website": "https://github.com/scinumtools/snt3"
     },
     "pint": {
@@ -87,7 +87,7 @@
     "--config",
     "benchmarks/pyunits/config.dip",
     "--csv-output",
-    "benchmarks/pyunits/results/pyunits_pinned_quick_20261025T120551Z_76936.csv",
+    "benchmarks/pyunits/results/pyunits_pinned_quick_20261026T183730Z_17981.csv",
     "--sizes",
     "3",
     "1000",
@@ -122,7 +122,7 @@
   ],
   "python": "python",
   "actual_snt": {
-    "version": "0.9.10",
+    "version": "0.9.11",
     "package_path": "benchmarks/pyunits/.venv-pinned/lib/python3.13/site-packages/scinumtools3/__init__.py"
   }
 }

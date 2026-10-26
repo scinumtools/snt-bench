@@ -1,9 +1,0 @@
-participant,participant_version,case_class,fixture_count,samples_per_fixture,median_ms,min_ms,max_ms
-dipl,0.9.8,valid,2,3,14.908896,14.587375,16.781625
-dipl,0.9.8,invalid,6,3,15.0124995,14.29525,16.055417
-jsonschema,4.26.0,valid,2,3,79.4877295,75.997083,84.831542
-jsonschema,4.26.0,invalid,6,3,77.35027099999999,76.103708,80.703042
-cue,0.17.1,valid,2,3,10.9347085,10.456667,11.50775
-cue,0.17.1,invalid,6,3,10.9300415,10.254459,11.576958
-pkl,0.32.2,valid,2,3,13.136604,12.268667,13.321167
-pkl,0.32.2,invalid,6,3,17.0736665,12.779791,20.148625

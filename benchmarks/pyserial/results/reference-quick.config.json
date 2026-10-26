@@ -1,6 +1,6 @@
 {
   "config_path": "benchmarks/pyserial/config.dip",
-  "config_sha256": "de34ba4bcb7b6a9d8b643c15eaffed5c1f4dd81c001851380c5f18ad71057f41",
+  "config_sha256": "fc26e58b1e388d0594c7ff7e3f5f19f289426db4afc767ccd9c14b94df1d247e",
   "settings": {
     "formats": [
       "json",
@@ -37,7 +37,7 @@
   },
   "projects": {
     "scinumtools3": {
-      "version": "0.9.10",
+      "version": "0.9.11",
       "website": "https://github.com/scinumtools/snt3"
     },
     "pyyaml": {
@@ -71,9 +71,9 @@
     "--config",
     "benchmarks/pyserial/config.dip",
     "--output",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261025T114450Z_76263.csv",
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T183811Z_18063.csv",
     "--figure",
-    "benchmarks/pyserial/results/pyserial_pinned_quick_20261025T114450Z_76263.png"
+    "benchmarks/pyserial/results/pyserial_pinned_quick_20261026T183811Z_18063.png"
   ],
   "python": "python"
 }

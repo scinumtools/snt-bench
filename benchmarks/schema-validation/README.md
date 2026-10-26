@@ -45,6 +45,8 @@ For example, `case_ids = ["invalid/*"]` selects all six rejection cases, while `
 
 ## Results
 
+The native CLI figure below is the archived SNT CLI 0.9.10 comparison; a matching 0.9.11 CLI executable was not available in this environment. The in-process DIPL results below use the pinned Python package 0.9.11.
+
 [Correctness matrix](results/schema_validation_20261025T120518Z_correctness.csv) · [Timing summary](results/schema_validation_20261025T120518Z_summary.csv) · [Per-sample timings](results/schema_validation_20261025T120518Z_samples.csv) · [Effective configuration](results/schema_validation_20261025T120518Z.config.json)
 
 ![Same-case native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](results/schema_validation_20261025T120518Z.png)
@@ -55,11 +57,11 @@ With DIPL 0.9.10, median batch times were 14.57 ms (DIPL), 77.19 ms (JSON Schema
 
 ### In-process Python API results
 
-[Correctness matrix](results/schema_validation_inprocess_20261025T120534Z_correctness.csv) · [Timing summary](results/schema_validation_inprocess_20261025T120534Z_summary.csv) · [Per-sample timings](results/schema_validation_inprocess_20261025T120534Z_samples.csv) · [Effective configuration](results/schema_validation_inprocess_20261025T120534Z.config.json)
+[Correctness matrix](results/schema_validation_inprocess_20261026T184046Z_correctness.csv) · [Timing summary](results/schema_validation_inprocess_20261026T184046Z_summary.csv) · [Per-sample timings](results/schema_validation_inprocess_20261026T184046Z_samples.csv) · [Effective configuration](results/schema_validation_inprocess_20261026T184046Z.config.json)
 
-![In-process Python API batch timings for DIPL and JSON Schema](results/schema_validation_inprocess_20261025T120534Z.png)
+![In-process Python API batch timings for DIPL 0.9.11 and JSON Schema](results/schema_validation_inprocess_20261026T184046Z.png)
 
-This measurement compares only DIPL and JSON Schema, the participants with Python APIs. Both passed the same eight individual correctness cases. Each timed batch call creates the validator/parser and handles the same two valid or six invalid documents; the 10 warmups and 100 measured calls are controlled by `timing.inprocess` in [`config.dip`](config.dip). Python process startup and imports are outside the timed call, but schema setup, file reads, parsing, and validation are included. With DIPL 0.9.10, medians were 0.788 ms (DIPL) and 0.145 ms (JSON Schema) for valid batches, and 1.119 ms and 0.249 ms, respectively, for invalid batches. Relative to the previous DIPL 0.9.8 snapshot, the DIPL medians are about 11% lower for valid and 18% lower for invalid batches. This explains why the CLI chart makes JSON Schema appear much slower: most of its measured CLI time is interpreter and command startup. The in-process values are not a pure validator comparison because the APIs take different native inputs and perform different setup and parsing work. CUE and Pkl are omitted because they use separate runtimes; this method does not imply a ranking across all four tools.
+This measurement compares only DIPL and JSON Schema, the participants with Python APIs. Both passed the same eight individual correctness cases. Each timed batch call creates the validator/parser and handles the same two valid or six invalid documents; the 10 warmups and 100 measured calls are controlled by `timing.inprocess` in [`config.dip`](config.dip). Python process startup and imports are outside the timed call, but schema setup, file reads, parsing, and validation are included. With DIPL 0.9.11, medians were 0.807 ms (DIPL) and 0.148 ms (JSON Schema) for valid batches, and 1.141 ms and 0.244 ms, respectively, for invalid batches. Compared with the 0.9.10 run, DIPL is about 2–3% slower in this quick comparison, a difference too small to interpret as a meaningful change from one run. The in-process values are not a pure validator comparison because the APIs take different native inputs and perform different setup and parsing work. CUE and Pkl are omitted because they use separate runtimes; this method does not imply a ranking across all four tools.
 
 ## Measurement and interpretation
 
