@@ -224,7 +224,8 @@ def main():
     if args.quick and source == "pinned":
         for suffix in (".csv", ".png", ".config.json"):
             (output_dir / ("reference-quick" + suffix)).write_bytes(base.with_suffix(suffix).read_bytes())
-    sanitize_result_metadata(output_dir, ROOT)
+    sanitize_result_metadata(output_dir, ROOT, (base.name, "reference-quick")
+                             if args.quick and source == "pinned" else (base.name,))
     removed = prune_old_results(output_dir)
     if removed:
         print(f"Pruned {len(removed)} files from result groups older than the newest ten.")

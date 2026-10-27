@@ -78,7 +78,7 @@ def main():
     if a.quick:
         for ext in (".csv", ".png", ".config.json"):
             (out / ("reference-quick"+ext)).write_bytes(base.with_suffix(ext).read_bytes())
-    sanitize_result_metadata(out,ROOT)
+    sanitize_result_metadata(out, ROOT, (base.name, "reference-quick") if a.quick else (base.name,))
     prune_old_results(out)
 
 if __name__ == "__main__": main()

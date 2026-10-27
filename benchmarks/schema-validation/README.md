@@ -45,15 +45,15 @@ For example, `case_ids = ["invalid/*"]` selects all six rejection cases, while `
 
 ## Results
 
-The combined figure shows the four-participant native CLI snapshot (SNT CLI 0.9.10) alongside the refreshed in-process Python comparison (DIPL/SNT3 0.9.12). The CLI panel remains its previously recorded run; the in-process panel is the current pinned 0.9.12 result.
+The native CLI and in-process Python comparisons both use SNT3 0.9.12. Their combined figure is shown in the [main README](../../README.md#schema-and-configuration-validation).
 
-[Correctness matrix](results/schema_validation_20261025T120518Z_correctness.csv) · [Timing summary](results/schema_validation_20261025T120518Z_summary.csv) · [Per-sample timings](results/schema_validation_20261025T120518Z_samples.csv) · [Effective configuration](results/schema_validation_20261025T120518Z.config.json)
+[Correctness matrix](results/schema_validation_20261027T054653Z_correctness.csv) · [Timing summary](results/schema_validation_20261027T054653Z_summary.csv) · [Per-sample timings](results/schema_validation_20261027T054653Z_samples.csv) · [Effective configuration](results/schema_validation_20261027T054653Z.config.json)
 
-![Same-case native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](results/schema_validation_20261025T120518Z.png)
+![Same-case native CLI batch timings for DIPL, JSON Schema, CUE, and Pkl](results/schema_validation_20261027T054653Z.png)
 
 The correctness matrix runs each of the eight cases separately; all four participants matched the expected outcomes. For timing, each participant receives the same complete set of valid cases (two documents) or invalid cases (six documents) in a single native CLI invocation. The chart reports total time per batch, not per document, so comparisons are between tools within the same fixture class. It shows medians from 20 batches after three warmup batches. Error bars show the observed minimum and maximum, not confidence intervals.
 
-With DIPL 0.9.10, median batch times were 14.57 ms (DIPL), 77.19 ms (JSON Schema), 10.46 ms (CUE), and 12.48 ms (Pkl) for valid inputs; for invalid inputs they were 15.86 ms, 76.07 ms, 10.70 ms, and 13.04 ms, respectively. Compared with the previous DIPL 0.9.8 snapshot, the DIPL medians are modestly lower in this run (about 3–5%); the other participant medians also shifted, underscoring that these are single-machine measurements. This is a more comparable measure of the complete CLI task: every tool validates the same documents, in one process per batch, with one startup cost per batch. It still measures each tool's runtime and CLI integration along with validation. In particular, JSON Schema's Python interpreter startup remains in the time, so these numbers do not establish that its validator is intrinsically slower. Treat this as an end-to-end CLI comparison; repeated CI runs on a fixed runner are needed before making broad speed claims.
+With DIPL 0.9.12, median batch times were 9.80 ms (DIPL), 76.10 ms (JSON Schema), 10.10 ms (CUE), and 12.33 ms (Pkl) for valid inputs; for invalid inputs they were 9.90 ms, 75.86 ms, 10.23 ms, and 12.54 ms, respectively. DIPL and CUE are close in this run. Relative to the earlier 0.9.10 snapshot, DIPL medians fell by about 33% and 38%, respectively; these are single-machine measurements and the other participants' timings also vary. Each tool validates the same documents in one process per batch, with one startup cost. The measurement includes runtime and CLI integration, so JSON Schema's Python interpreter startup remains in the time; it does not establish that its validator is intrinsically slower. Repeated runs on a fixed runner are needed before making broad speed claims.
 
 ### In-process Python API results
 

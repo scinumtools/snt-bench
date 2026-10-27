@@ -391,7 +391,7 @@ def main():
     for row in summary:
         print(f"{row['participant']} {row['participant_version']} {row['case_class']}: "
               f"median {row['median_batch_ms']:.3f} ms for a {row['fixture_count']}-document batch")
-    sanitize_result_metadata(output_dir, REPO)
+    sanitize_result_metadata(output_dir, REPO, (prefix,))
     removed = prune_old_results(output_dir)
     if removed:
         print(f"Pruned {len(removed)} files from result sets older than the newest 10.")

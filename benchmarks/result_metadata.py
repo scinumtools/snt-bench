@@ -64,12 +64,12 @@ def strip_pyperf_host_details(path):
     path.write_text(json.dumps(clean(document), separators=(",", ":")) + "\n", encoding="utf-8")
 
 
-def sanitize_result_metadata(results_dir, repository):
-    """Remove host-identifying details while retaining reproducible context."""
+def sanitize_result_metadata(results_dir, repository, prefixes):
+    """Clean only the current run's outputs, preserving archived provenance."""
     results_dir = Path(results_dir)
     repository = Path(repository).resolve()
     for path in results_dir.iterdir():
-        if not path.is_file():
+        if not path.is_file() or not any(path.name.startswith(prefix) for prefix in prefixes):
             continue
         if path.name.endswith(".pyperf.json"):
             strip_pyperf_host_details(path)

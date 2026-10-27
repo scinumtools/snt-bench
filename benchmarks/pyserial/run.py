@@ -210,7 +210,7 @@ def main():
     }
     base.with_suffix(".config.json").write_text(json.dumps(snapshot, indent=2) + "\n")
     print(f"Configuration: {base.with_suffix('.config.json')}")
-    sanitize_result_metadata(results_dir, REPO_DIR)
+    sanitize_result_metadata(results_dir, REPO_DIR, (base.name,))
     removed = prune_old_results(results_dir)
     if removed:
         print(f"Pruned {len(removed)} files from result sets older than the newest 10.")

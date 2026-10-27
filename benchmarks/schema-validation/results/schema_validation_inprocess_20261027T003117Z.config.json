@@ -1,0 +1,27 @@
+{
+  "config_path": "benchmarks/schema-validation/config.dip",
+  "config_sha256": "b9bcf068b6d084f218e96e2b074f675b469ab01aab932c1c95a47d561b72856f",
+  "method": "in-process Python APIs; no subprocess launched by the timed operation",
+  "participants": {
+    "dipl": "0.9.12",
+    "jsonschema": "4.26.0"
+  },
+  "snt_source": "pinned",
+  "snt_local_revision": null,
+  "snt_local_worktree_status": [],
+  "snt_local_diff_sha256": null,
+  "case_ids": [
+    "valid/steady",
+    "valid/transient",
+    "invalid/missing-required",
+    "invalid/wrong-type",
+    "invalid/enum",
+    "invalid/range",
+    "invalid/pattern",
+    "invalid/nested-bound"
+  ],
+  "samples": 100,
+  "warmups": 10,
+  "python_version": "3.13.15",
+  "platform": "macOS-arm64"
+}

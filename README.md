@@ -72,7 +72,7 @@ faster than the YAML stack and slower than TOML and JSON.
 
 ## Schema and configuration validation
 
-Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. The native CLI panel shows the retained four-participant SNT CLI 0.9.10 snapshot; the in-process panel shows the refreshed DIPL/SNT3 0.9.12 and JSON Schema results. The panels use different scopes and should be compared separately.
+Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. Both panels use SNT3 0.9.12. In this run DIPL and CUE have similar native CLI batch times; the in-process panel compares DIPL and JSON Schema. The panels use different scopes and should be compared separately.
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 

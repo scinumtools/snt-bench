@@ -3,6 +3,7 @@
 import argparse
 import csv
 from collections import defaultdict
+from fnmatch import fnmatchcase
 import os
 from pathlib import Path
 import tempfile
@@ -70,6 +71,7 @@ def main():
                         help="Summary CSV produced by compare.py or matrix.py")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT,
                         help=f"Figure path (default: {DEFAULT_OUTPUT})")
+    parser.add_argument("--case", help="Only plot matrix case IDs matching this glob")
     args = parser.parse_args()
 
     grouped = defaultdict(list)
@@ -81,6 +83,8 @@ def main():
         reader = csv.DictReader(csv_file)
         matrix_format = "group" in (reader.fieldnames or ())
         for row in reader:
+            if args.case and not fnmatchcase(row.get("case_id", ""), args.case):
+                continue
             library = row.get("library")
             if library and row.get("library_version"):
                 library_versions.setdefault(library, row["library_version"])
@@ -128,7 +132,7 @@ def main():
     operations = list(dict.fromkeys(label for label, _ in grouped))
     columns = min(4, len(operations))
     rows = (len(operations) + columns - 1) // columns
-    fig, axes = plt.subplots(rows, columns, figsize=(max(6.5, columns * 4), rows * 3.1),
+    fig, axes = plt.subplots(rows, columns, figsize=(max(6.5, columns * 4), max(4.5, rows * 3.1)),
                              layout="constrained", squeeze=False)
     flat_axes = [axis for row in axes for axis in row]
     for index, operation in enumerate(operations):
@@ -217,14 +221,18 @@ def main():
         ax.set_visible(False)
 
     fig.suptitle("Python unit library performance by operation and input size", fontsize=15)
-    fig.supxlabel("Number of elements (scalar plotted at 1)")
+    if len(operations) == 1:
+        flat_axes[0].set_xlabel("Number of elements")
+    else:
+        fig.supxlabel("Number of elements (scalar plotted at 1)")
     fig.supylabel("Time per operation (µs)")
 
     source = metadata.get("snt_source", "unknown")
     snt_version = metadata.get("scinumtools3_version", "unknown")
     python_version = metadata.get("python_version", "unknown")
-    fig.text(0.99, 0.006, f"SNT {snt_version} ({source}); Python {python_version}",
-             ha="right", va="bottom", fontsize=8, color="#555555")
+    if len(operations) > 1:
+        fig.text(0.99, 0.006, f"SNT {snt_version} ({source}); Python {python_version}",
+                 ha="right", va="bottom", fontsize=8, color="#555555")
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.output, dpi=300, bbox_inches="tight")

@@ -216,6 +216,7 @@ benchmarks/pyunits/results/*
 !benchmarks/pyunits/results/reference-quick_samples.csv
 !benchmarks/pyunits/results/reference-quick.config.json
 !benchmarks/pyunits/results/reference-quick.png
+!benchmarks/pyunits/results/reference-pyperf-ci*
 !benchmarks/pyunits/results/conversion-storage-sharing.csv
 !benchmarks/pyunits/results/conversion-storage-sharing.png
 !benchmarks/pyunits/results/github-pyperf-40137348007.*
@@ -256,6 +257,8 @@ benchmarks/uncertainty-propagation/results/*
 # and provenance have been reviewed. Keep the published comparison figure.
 benchmarks/schema-validation/results/*
 !benchmarks/schema-validation/results/schema_validation_pinned_combined_20261026.png
+!benchmarks/schema-validation/results/schema_validation_20261027T054653Z*
+!benchmarks/schema-validation/results/schema_validation_inprocess_20261027T003117Z*
 
 # PyPI configuration file
 .pypirc

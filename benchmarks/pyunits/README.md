@@ -91,31 +91,38 @@ The figure legend includes the library versions pinned for this reference run.
 
 ### Same-unit conversion and storage sharing
 
-The matrix now checks whether the converted ndarray quantity's public value array shares memory with the source quantity. A focused quick run on macOS arm64, Python 3.13.15 produced these same-unit conversion results (median time; observed storage behavior):
+The matrix checks whether the converted ndarray quantity's public value array shares memory with the source quantity. The pinned quick run on macOS arm64, Python 3.13.15 produced these same-unit conversion results (median time; observed storage behavior):
 
 | Library | 3 values | 1,000 values | 1,000,000 values |
 |---|---:|---:|---:|
 | SNT 0.9.12 | 1.83 µs · independent | 1.96 µs · independent | 235.92 µs · independent |
-| Pint 0.26.2 | 4.21 µs · shared | 4.28 µs · shared | 4.21 µs · shared |
-| unyt 3.2.0 | 3.75 µs · independent | 4.27 µs · independent | 197.23 µs · independent |
-| Astropy 8.0.2 | 3.11 µs · independent | 3.32 µs · independent | 189.59 µs · independent |
+| Pint 0.26.2 | 4.28 µs · shared | 4.30 µs · shared | 4.24 µs · shared |
+| unyt 3.2.0 | 4.02 µs · independent | 4.35 µs · independent | 188.30 µs · independent |
+| Astropy 8.0.2 | 3.08 µs · independent | 3.26 µs · independent | 190.89 µs · independent |
 
 “Shared” means `numpy.shares_memory` found overlapping public value arrays; “independent” means it did not. The result makes the performance tradeoff visible: Pint's same-unit result reuses storage and stays nearly constant in this case, while SNT returns independently stored data and its cost grows with array size. These are quick measurements, not a pyperf comparison. The [recorded measurements](results/conversion-storage-sharing.csv) include timestamps and per-library values. Subsequent matrix runs record this in `conversion_shares_input` for all ndarray conversion cases.
 
 ![Same-unit conversion times with storage-sharing markers](results/conversion-storage-sharing.png)
+
+From this directory, regenerate the figure from the full reference CSV with
+`python plot_results.py --input results/reference-quick.csv --case 'conversion/same/ndarray/*' --output results/conversion-storage-sharing.png`.
 
 The figure shows median time per operation; the dotted NumPy trace is a unitless numeric baseline. See the [full results CSV](results/reference-quick.csv), [raw samples](results/reference-quick_samples.csv), and [effective configuration](results/reference-quick.config.json) for the measurements and environment.
 
 The SNT3 0.9.12 reference passed all correctness checks. Relative to the 0.9.11 quick snapshot on the same macOS arm64/Python 3.13.15 setup, all 60 SNT case medians were lower, with a median per-case time ratio of 0.81. The largest absolute improvements are in million-element operations: equal-unit addition fell from 728 µs to 381 µs, division from 597 µs to 344 µs, and temperature conversion from 337 µs to 207 µs. Same-unit conversion still returns independently stored data; at one million elements it measured 236 µs, compared with Pint's 4.24 µs result, which shares its public NumPy storage. This is one five-sample quick run and the broad shift is not confirmed by pyperf; treat it as a measurement to follow up, not a settled performance claim.
 
 SNT3 0.9.12 adds native PUQ Monte Carlo propagation and includes [DIPL parsing optimizations](https://github.com/scinumtools/snt3/commit/5cac2a25910f4e89ec206921d7afde5323c447fc). The Monte Carlo API is exercised in the [uncertainty-propagation benchmark](../uncertainty-propagation/README.md); it is outside this unit-operation timing matrix. Earlier releases added source-aware covariance propagation in [commit c82b6c97](https://github.com/scinumtools/snt3/commit/c82b6c97).
-### GitHub Actions pyperf screening run
+### Pyperf screening run
+
+The current pinned SNT3 0.9.12 screening run was recorded on macOS arm64 with Python 3.13.15. It uses the 15-case CI profile, with three worker processes, three values per worker, one warmup, and a 20 ms minimum value time. All 60 library checks passed. SNT3 had the lowest median among the four unit libraries in 14 cases; Pint had the lowest median for million-element quantity construction. Pyperf reported stability warnings for several cases, so these rankings describe this run and should be confirmed by longer repeated measurements.
+
+![Pinned pyperf screening medians for Python unit libraries](results/reference-pyperf-ci.png)
+
+The [summary CSV](results/reference-pyperf-ci.csv), [samples](results/reference-pyperf-ci_samples.csv), [raw pyperf data](results/reference-pyperf-ci.pyperf.json), and [configuration](results/reference-pyperf-ci.config.json) record the measurements and environment. This run uses the published SNT3 package, not a local checkout.
 
 [Workflow run #40137348007](https://github.com/scinumtools/snt-bench/actions/runs/40137348007) is a historical CI profile on `ubuntu-24.04` with Python 3.13.16 and pinned SNT 0.9.8; the current quick reference uses 0.9.12, Pint 0.26.2, unyt 3.2.0, and Astropy 8.0.2. It measured 15 representative cases with three worker processes, three values per worker, one warmup, and a 20 ms minimum value time. All 60 library checks passed. SNT had the lowest median among the four unit libraries in 13 of 15 cases; Pint led million-element quantity construction, and Astropy led million-element compatible-unit addition.
 
-![GitHub Actions pyperf medians for the representative pyunits CI profile](results/github-pyperf-40137348007.png)
-
-This is a screening run, not a full pyperf matrix. The workflow log includes pyperf instability warnings for some cases, so treat the rank counts as descriptive of this run. The [generated summary](results/github-pyperf-40137348007.summary.md), [CSV](results/github-pyperf-40137348007.csv), [per-sample CSV](results/github-pyperf-40137348007_samples.csv), [raw pyperf data](results/github-pyperf-40137348007.pyperf.json), and [effective configuration](results/github-pyperf-40137348007.config.json) are archived with the figure. The [GitHub artifact](https://github.com/scinumtools/snt-bench/actions/runs/40137348007/artifacts/12577287123) contains the original uploaded files and is retained for 90 days.
+This historical screening run is not a full pyperf matrix. The workflow log includes pyperf instability warnings for some cases, so treat the rank counts as descriptive of that run. Its [figure](results/github-pyperf-40137348007.png), [summary](results/github-pyperf-40137348007.summary.md), [CSV](results/github-pyperf-40137348007.csv), [per-sample CSV](results/github-pyperf-40137348007_samples.csv), [raw pyperf data](results/github-pyperf-40137348007.pyperf.json), and [effective configuration](results/github-pyperf-40137348007.config.json) are archived. The [GitHub artifact](https://github.com/scinumtools/snt-bench/actions/runs/40137348007/artifacts/12577287123) contains the original uploaded files and is retained for 90 days.
 
 Every matrix case has an equivalent plain NumPy operation as an unranked numeric baseline. Before timing a library case, the script checks value and shape against the expected result after conversion to the target unit. The basic comparison checks values and output units after timing. SNT, Pint, unyt, and Astropy run the matrix; SymPy participates only in the basic scalar workload. Operations start with preconstructed quantities; construction is measured separately. For ndarray conversion cases, `conversion_shares_input` records whether the converted quantity's public value array shares memory with the source quantity's public value array (`true` or `false`). This checks observable aliasing through each library's Python API; it does not infer copy-on-write behavior or hidden storage that the API does not expose. Scalar and non-conversion rows leave the field empty. `shares_input` remains the separate construction check against the original NumPy array.
 
