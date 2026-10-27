@@ -9,9 +9,9 @@ seed, coverage targets, tolerances, and output settings are read from
 
 ## Cases and interpretation
 
-The independent reference draws use the fixed NumPy seed. Local SNT3 and
-MetroloPy Monte Carlo tracks use the same configured seed and sample count with
-their own random engines. Most inputs are normal; the rectangular cases use
+The independent reference draws use the fixed NumPy seed. SNT3 and MetroloPy
+Monte Carlo tracks use the same configured seed and sample count with their own
+random engines. Most inputs are normal; the rectangular cases use
 uniform inputs and the correlation case uses a bivariate normal. Each row records the package result and uncertainty, closed-form
 reference standard deviation, Monte Carlo mean and standard deviation, central
 95% Monte Carlo interval, and observed coverage of the reported
@@ -28,7 +28,7 @@ coverage relative to the normal one-standard-deviation reference (68.27%).
 | `reciprocal_uniform` | Reciprocal of a bounded positive uniform input; tests skewed output without a singularity or infinite variance. |
 | `square_nonlinear` | Square a normal input with a large relative uncertainty; compares first-order output uncertainty and nominal value with the exact output moments and Monte Carlo. |
 | `sqrt_uniform_boundary` | Square root of a uniform squared-length input whose support touches zero; tests a nonlinear boundary and the resulting output bias and spread. |
-| `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. SNT3 0.9.11 propagates the configured correlation through source-aware first-order sensitivities. |
+| `correlated_addition` | Add normal metre quantities with correlation `ρ = 0.8`; checks covariance propagation. SNT3 0.9.12 propagates the configured correlation through source-aware first-order sensitivities. |
 | `rectangular_linear` | Compare a uniform Monte Carlo input with library inputs carrying the same mean and standard deviation; shows how a one-standard-deviation interval's coverage depends on distribution shape. |
 
 First-order references follow the [GUM law of propagation](https://doi.org/10.59161/JCGM100-2008E).
@@ -53,25 +53,27 @@ For the rectangular case, each package receives the same nominal value and
 standard deviation; the uniform distribution is used only for the Monte Carlo
 reference, so this case measures propagation behavior and interval coverage,
 not native non-normal-distribution support.
-SNT3 0.9.11 uses source-aware first-order propagation and represents input correlations through shared uncertainty sources. This behavior is documented in the [implementation change](https://github.com/scinumtools/snt3/commit/c82b6c97). The
+SNT3 0.9.12 provides both source-aware first-order propagation and native
+`Quantity.monte_carlo` propagation. Its release adds the Monte Carlo quantity
+API and optimizes DIP parsing in [commit 5cac2a2](https://github.com/scinumtools/snt3/commit/5cac2a25910f4e89ec206921d7afde5323c447fc); the earlier source-aware correlation implementation is in [commit c82b6c97](https://github.com/scinumtools/snt3/commit/c82b6c97). The
 reported interval coverage is descriptive: a uniform distribution does not
 have the normal 68.27% coverage within ±1 standard deviation.
 
 ## Results
 
-Local SNT3 runs can include two PUQ tracks, selected by
-`execution.local_snt_tracks` in [`config.dip`](config.dip): the fast ordinary
-first-order propagation path, and the new `Quantity.monte_carlo` path. Both use
-the same configured input models; the Monte Carlo path uses the configured
-sample count, seed, and 95% interval coverage. The figure labels their separate
-coverage targets: normal ±1σ coverage for the fast path and central 95%
-coverage for the Monte Carlo path. The latter is available only with a local
-checkout that includes the API; pinned releases continue to show the
-cross-library fast-path comparison. MetroloPy also exposes a native simulation
-API, so its Monte Carlo track is included for the two new bounded nonlinear
-cases when `execution.metrolopy_monte_carlo` is enabled. Pint provides
-uncertainty integration through `uncertainties`, while Monte Carlo sampling is
-performed by the benchmark's NumPy reference path rather than by a Pint API.
+The figure includes ordinary first-order results for all three libraries and
+Monte Carlo tracks for SNT3 and MetroloPy, selected by `execution.snt_tracks`
+and `execution.metrolopy_monte_carlo` in [`config.dip`](config.dip). Where both
+MC tracks are available, they use the same input models, sample count, seed,
+and central 95% coverage target. Their random engines are independent of the benchmark's
+seeded NumPy reference draws. Fast first-order intervals target normal ±1σ
+coverage; Monte Carlo intervals target central 95% coverage. MetroloPy's native
+simulation is used for the normal and uniform cases except `correlated_addition`.
+In a direct check, the configured correlation was not retained in MetroloPy's
+simulated samples, so that Monte Carlo result is omitted rather than presented
+as a correlated comparison. SNT3's Monte Carlo track includes that case. Pint remains in the first-order comparison through its
+`uncertainties` integration; its sampling reference is the benchmark's NumPy
+path rather than a Pint Monte Carlo API.
 
 ![Uncertainty ratio and observed coverage with Monte Carlo confidence intervals](results/reference-quick.png)
 
@@ -79,7 +81,7 @@ The upper panel shows reported uncertainty divided by Monte Carlo standard
 deviation; the horizontal reference at `1` indicates equal spread. The lower
 panel shows the observed coverage percentage of each reported ±uncertainty
 interval, with 95% Wilson confidence intervals for Monte Carlo sampling and a
-68.27% normal one-sigma reference line. In the pinned SNT3 0.9.11 run, addition, product, reciprocal, and linear conversion agree with the first-order comparison participants. For correlated addition, SNT, Pint, and MetroloPy report 0.475395 against a Monte Carlo standard deviation of 0.476318. The nonlinear square case reports first-order uncertainty 0.4 while Monte Carlo spread is about 0.4558 and the Monte Carlo mean differs from the nominal square, illustrating the limits of first-order propagation for this deliberately nonlinear input.
+68.27% normal one-sigma reference line. In the pinned SNT3 0.9.12 run, the fast SNT3, Pint, and MetroloPy estimates agree on the linear, addition, product, reciprocal, and correlated-addition cases. For nonlinear square propagation, all three first-order tracks report uncertainty 0.4 while Monte Carlo spread is about 0.461, illustrating the limits of first-order propagation for this deliberately nonlinear input. SNT3's Monte Carlo track covers the full set of normal and uniform cases; MetroloPy's covers the configured cases except the correlation case described above.
 For the uniform input, all participants report the input standard deviation,
 but the interval covers about 57.6% of draws, as expected for a uniform
 distribution rather than a normal one. The correlation case agrees with the

@@ -21,17 +21,20 @@ uncertainty_propagation
     libraries str[:] = ["snt", "pint", "metrolopy"]
       ?descr "Libraries included in this run; Pint uses uncertainties, MetroloPy provides first-order and optional native Monte Carlo tracks."
 
-    local_snt_tracks str[:] = ["fast", "monte_carlo"]
-      ?descr "SNT3 tracks in local mode: ordinary fast propagation and Quantity.monte_carlo."
+    snt_tracks str[:] = ["fast", "monte_carlo"]
+      ?descr "SNT3 tracks in pinned and local modes: ordinary fast propagation and Quantity.monte_carlo."
 
     metrolopy_monte_carlo bool = true
-      ?descr "Add MetroloPy's native simulated track when that library is selected."
+      ?descr "Add MetroloPy's native Monte Carlo track for each configured case when selected."
+
+    metrolopy_mc_cases str[:] = ["linear_conversion", "addition", "product", "reciprocal", "reciprocal_uniform", "square_nonlinear", "sqrt_uniform_boundary", "rectangular_linear"]
+      ?descr "Cases with validated MetroloPy Monte Carlo propagation; correlated_addition is excluded because the pinned simulate path did not preserve the configured input correlation."
 
     samples int = 200000
       ?descr "Monte Carlo draws per case; increase to reduce sampling noise."
 
     seed int = 20261025
-      ?descr "Seed shared across the independent reference, local SNT3, and MetroloPy simulation tracks."
+      ?descr "Seed shared across the independent reference, SNT3, and MetroloPy simulation tracks."
 
     figure_dpi int = 160
       ?descr "Resolution of the summary figure."
@@ -189,14 +192,14 @@ uncertainty_propagation
 
   packages
     snt
-      version str = "0.9.11"
+      version str = "0.9.12"
         ?descr "Pinned SNT3 release whose PUQ uncertainty model is under comparison."
-        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.11/"
+        ?rationale "Release: https://pypi.org/project/scinumtools3/0.9.12/"
 
       website str = "https://github.com/scinumtools/snt3"
         ?descr "SNT3 source repository and project documentation."
 
-      release str = "https://pypi.org/project/scinumtools3/0.9.11/"
+      release str = "https://pypi.org/project/scinumtools3/0.9.12/"
 
     pint
       version str = "0.26.2"

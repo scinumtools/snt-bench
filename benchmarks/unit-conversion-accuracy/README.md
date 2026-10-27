@@ -45,7 +45,7 @@ definitions and SP 811 only for the international-foot relation.
 The figure shows the largest error over the configured inputs in each case.
 Markers are horizontally offset within each category so identical or nearly
 identical library results remain visible; the offsets are visual only.
-With SNT3 0.9.11 and the other pinned library versions, all participating outputs in this reference run are within one ULP of the
+With SNT3 0.9.12 and the other pinned library versions, all participating outputs in this reference run are within one ULP of the
 correctly rounded exact rational value. Maximum relative errors are on the
 order of `10⁻¹⁶`, as expected for ordinary binary64 rounding in these
 operations. This compact suite does not establish behavior for every unit,

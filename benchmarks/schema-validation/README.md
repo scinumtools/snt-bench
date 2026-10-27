@@ -45,7 +45,7 @@ For example, `case_ids = ["invalid/*"]` selects all six rejection cases, while `
 
 ## Results
 
-The full four-participant CLI figure below uses the pinned SNT CLI 0.9.10 run. The in-process figure reports the pinned Python-package run with DIPL 0.9.11. These are the published reference results.
+The combined figure shows the four-participant native CLI snapshot (SNT CLI 0.9.10) alongside the refreshed in-process Python comparison (DIPL/SNT3 0.9.12). The CLI panel remains its previously recorded run; the in-process panel is the current pinned 0.9.12 result.
 
 [Correctness matrix](results/schema_validation_20261025T120518Z_correctness.csv) · [Timing summary](results/schema_validation_20261025T120518Z_summary.csv) · [Per-sample timings](results/schema_validation_20261025T120518Z_samples.csv) · [Effective configuration](results/schema_validation_20261025T120518Z.config.json)
 
@@ -57,11 +57,11 @@ With DIPL 0.9.10, median batch times were 14.57 ms (DIPL), 77.19 ms (JSON Schema
 
 ### In-process Python API results
 
-[Correctness matrix](results/schema_validation_inprocess_20261026T184046Z_correctness.csv) · [Timing summary](results/schema_validation_inprocess_20261026T184046Z_summary.csv) · [Per-sample timings](results/schema_validation_inprocess_20261026T184046Z_samples.csv) · [Effective configuration](results/schema_validation_inprocess_20261026T184046Z.config.json)
+[Correctness matrix](results/schema_validation_inprocess_20261027T003117Z_correctness.csv) · [Timing summary](results/schema_validation_inprocess_20261027T003117Z_summary.csv) · [Per-sample timings](results/schema_validation_inprocess_20261027T003117Z_samples.csv) · [Effective configuration](results/schema_validation_inprocess_20261027T003117Z.config.json)
 
-![In-process Python API batch timings for DIPL 0.9.11 and JSON Schema](results/schema_validation_inprocess_20261026T184046Z.png)
+![In-process Python API batch timings for DIPL 0.9.12 and JSON Schema](results/schema_validation_inprocess_20261027T003117Z.png)
 
-This measurement compares only DIPL and JSON Schema, the participants with Python APIs. Both passed the same eight individual correctness cases. Each timed batch call creates the validator/parser and handles the same two valid or six invalid documents; the 10 warmups and 100 measured calls are controlled by `timing.inprocess` in [`config.dip`](config.dip). Python process startup and imports are outside the timed call, but schema setup, file reads, parsing, and validation are included. With DIPL 0.9.11, medians were 0.807 ms (DIPL) and 0.148 ms (JSON Schema) for valid batches, and 1.141 ms and 0.244 ms, respectively, for invalid batches. Compared with the 0.9.10 run, DIPL is about 2–3% slower in this quick comparison, a difference too small to interpret as a meaningful change from one run. The in-process values are not a pure validator comparison because the APIs take different native inputs and perform different setup and parsing work. CUE and Pkl are omitted because they use separate runtimes; this method does not imply a ranking across all four tools.
+This measurement compares only DIPL and JSON Schema, the participants with Python APIs. Both passed the same eight individual correctness cases. Each timed batch call creates the validator/parser and handles the same two valid or six invalid documents; the 10 warmups and 100 measured calls are controlled by `timing.inprocess` in [`config.dip`](config.dip). Python process startup and imports are outside the timed call, but schema setup, file reads, parsing, and validation are included. With DIPL 0.9.12, medians were 0.201 ms (DIPL) and 0.151 ms (JSON Schema) for valid batches, and 0.319 ms and 0.252 ms, respectively, for invalid batches. Relative to the previous DIPL 0.9.11 run, the DIPL medians fell by about 75% for valid batches and 72% for invalid batches, consistent with the [DIP parser optimizations in 0.9.12](https://github.com/scinumtools/snt3/commit/5cac2a25910f4e89ec206921d7afde5323c447fc). The in-process values are not a pure validator comparison because the APIs take different native inputs and perform different setup and parsing work. CUE and Pkl are omitted because they use separate runtimes; this method does not imply a ranking across all four tools.
 
 ## Measurement and interpretation
 

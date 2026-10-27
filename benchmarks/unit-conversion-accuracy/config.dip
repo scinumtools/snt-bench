@@ -92,14 +92,14 @@ unit_conversion_accuracy
 
   packages
     snt
-      version str = "0.9.11"
+      version str = "0.9.12"
         ?descr "Pinned SNT3 package release."
         ?rationale "Release provenance is in the release URL below."
 
       website str = "https://github.com/scinumtools/snt3"
         ?descr "SNT3 project and source repository."
 
-      release str = "https://pypi.org/project/scinumtools3/0.9.11/"
+      release str = "https://pypi.org/project/scinumtools3/0.9.12/"
         ?descr "Pinned package release page."
 
     pint

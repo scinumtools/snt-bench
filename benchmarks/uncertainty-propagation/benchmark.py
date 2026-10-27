@@ -45,10 +45,18 @@ def main():
         for pattern in (args.case or get("workload.selection.cases"))
     )]
     libraries = args.library or get("execution.libraries")
-    local_snt_tracks = get("execution.local_snt_tracks")
-    if set(local_snt_tracks) - {"fast", "monte_carlo"}:
-        raise SystemExit("execution.local_snt_tracks may contain only fast and monte_carlo")
+    snt_tracks = get("execution.snt_tracks")
+    if set(snt_tracks) - {"fast", "monte_carlo"}:
+        raise SystemExit("execution.snt_tracks may contain only fast and monte_carlo")
     metrolopy_monte_carlo = bool(get("execution.metrolopy_monte_carlo"))
+    metrolopy_mc_cases = set(get("execution.metrolopy_mc_cases"))
+    unknown_monte_carlo_cases = metrolopy_mc_cases - {
+        "linear_conversion", "addition", "product", "reciprocal", "reciprocal_uniform",
+        "square_nonlinear", "sqrt_uniform_boundary", "correlated_addition", "rectangular_linear",
+    }
+    if unknown_monte_carlo_cases:
+        raise SystemExit("execution.metrolopy_mc_cases contains unknown IDs: " +
+                         ", ".join(sorted(unknown_monte_carlo_cases)))
     samples = args.samples or int(get("execution.samples"))
     rng = np.random.default_rng(int(get("execution.seed")))
     registry = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
@@ -154,7 +162,7 @@ def main():
             draws = rng.normal(x, sx, samples)*scale + offset
             reference_sd = sx*scale
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 def operation(which):
                     if which == "snt":
@@ -166,12 +174,15 @@ def main():
                     return metrolopy.gummy(x, u=sx, unit=source).convert(target)
                 value, sigma = evaluate(library, operation)
                 append(case, library, f"{library} standard uncertainty", value, sigma, reference_sd, draws, target)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, {"degC": "Cel"}.get(source, source))
                 snt_target = {"degC": "Cel"}.get(target, target)
                 append_snt_monte_carlo(case, [qx], ["normal"],
                                        lambda sampled: sampled.convert(snt_target),
                                        reference_sd, draws, target)
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                metro_result = metrolopy.gummy(x, u=sx, unit=source).convert(target)
+                append_metrolopy_monte_carlo(case, metro_result, reference_sd, draws, target)
 
         elif case in ("addition", "product"):
             x, sx = float(get(prefix+"x")), float(get(prefix+"sigma_x"))
@@ -194,12 +205,12 @@ def main():
                     if which == "pint": return registry.Quantity(ufloat(x, sx), xu)*registry.Quantity(ufloat(y, sy), yu)
                     return metrolopy.gummy(x, u=sx, unit=xu)*metrolopy.gummy(y, u=sy, unit=yu)
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 value, sigma = evaluate(library, operation)
                 model = "PUQ fast first-order uncertainty" if library == "snt" else f"{library} first-order standard uncertainty"
                 append(case, library, model, value, sigma, reference_sd, draws, unit)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 if case == "addition":
                     qx, qy = snt(x, sx, unit), snt(y, sy, unit)
                     mc_model = lambda left, right: left + right
@@ -208,6 +219,16 @@ def main():
                     mc_model = lambda left, right: left * right
                 append_snt_monte_carlo(case, [qx, qy], ["normal", "normal"],
                                        mc_model, reference_sd, draws, unit)
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                if case == "addition":
+                    mx = metrolopy.gummy(x, u=sx, unit=unit)
+                    my = metrolopy.gummy(y, u=sy, unit=unit)
+                    metro_result = mx + my
+                else:
+                    mx = metrolopy.gummy(x, u=sx, unit=xu)
+                    my = metrolopy.gummy(y, u=sy, unit=yu)
+                    metro_result = mx * my
+                append_metrolopy_monte_carlo(case, metro_result, reference_sd, draws, unit)
 
         elif case == "reciprocal":
             x, sx, unit = float(get(prefix+"x")), float(get(prefix+"sigma_x")), get(prefix+"unit")
@@ -218,15 +239,18 @@ def main():
                 if which == "pint": return 1/registry.Quantity(ufloat(x, sx), unit)
                 return 1/metrolopy.gummy(x, u=sx, unit=unit)
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 value, sigma = evaluate(library, operation)
                 model = "PUQ fast first-order uncertainty" if library == "snt" else f"{library} first-order standard uncertainty"
                 append(case, library, model, value, sigma, reference_sd, draws, f"1/{unit}")
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, unit)
                 append_snt_monte_carlo(case, [qx], ["normal"], lambda sampled: 1 / sampled,
                                        reference_sd, draws, f"1/{unit}")
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                metro_result = 1 / metrolopy.gummy(x, u=sx, unit=unit)
+                append_metrolopy_monte_carlo(case, metro_result, reference_sd, draws, f"1/{unit}")
 
         elif case == "square_nonlinear":
             x, sx, unit = float(get(prefix+"x")), float(get(prefix+"sigma_x")), get(prefix+"unit")
@@ -243,15 +267,19 @@ def main():
                 q = metrolopy.gummy(x, u=sx, unit=unit)
                 return q*q
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 value, sigma = evaluate(library, operation)
                 model = f"{library} first-order uncertainty" if library != "snt" else "PUQ fast first-order uncertainty"
                 append(case, library, model, value, sigma, reference_sd, draws, out_unit)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, unit)
                 append_snt_monte_carlo(case, [qx], ["normal"], lambda sampled: sampled * sampled,
                                        reference_sd, draws, out_unit)
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                metro_input = metrolopy.gummy(x, u=sx, unit=unit)
+                append_metrolopy_monte_carlo(case, metro_input * metro_input,
+                                              reference_sd, draws, out_unit)
 
         elif case == "sqrt_uniform_boundary":
             x = float(get(prefix+"x"))
@@ -274,7 +302,7 @@ def main():
                 if which == "pint": return registry.Quantity(ufloat(x, sx), unit)**0.5
                 return metrolopy.gummy(x, u=sx, unit=unit)**0.5
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 value, sigma = evaluate(library, operation)
                 interval_low, interval_high = max(0.0, value-sigma), value+sigma
@@ -284,11 +312,11 @@ def main():
                 append(case, library, f"{library} first-order square-root propagation",
                        value, sigma, reference_sd, draws, out_unit,
                        coverage_target=fast_coverage)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, snt_input_unit)
                 append_snt_monte_carlo(case, [qx], [distribution], lambda sampled: sqrt(sampled),
                                        reference_sd, draws, out_unit)
-            if metrolopy_monte_carlo and "metrolopy" in libraries:
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
                 metro_input = metrolopy.gummy(
                     metrolopy.UniformDist(center=x, half_width=half_width), unit=unit
                 )
@@ -314,7 +342,7 @@ def main():
                 if which == "pint": return 1/registry.Quantity(ufloat(x, sx), unit)
                 return 1/metrolopy.gummy(x, u=sx, unit=unit)
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 value, sigma = evaluate(library, operation)
                 interval_low, interval_high = max(0.0, value-sigma), value+sigma
@@ -324,11 +352,11 @@ def main():
                 append(case, library, f"{library} first-order reciprocal propagation",
                        value, sigma, reference_sd, draws, f"1/{unit}",
                        coverage_target=fast_coverage)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, unit)
                 append_snt_monte_carlo(case, [qx], [distribution], lambda sampled: 1/sampled,
                                        reference_sd, draws, f"1/{unit}")
-            if metrolopy_monte_carlo and "metrolopy" in libraries:
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
                 metro_input = metrolopy.gummy(
                     metrolopy.UniformDist(center=x, half_width=half_width), unit=unit
                 )
@@ -343,7 +371,7 @@ def main():
             draws = rng.multivariate_normal([x, y], [[sx*sx, covariance], [covariance, sy*sy]], samples).sum(axis=1)
             reference_sd = math.sqrt(sx*sx+sy*sy+2*covariance)
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 if library == "snt" and not hasattr(Quantity, "correlate"):
                     unsupported(case, library, draws, unit, "Pinned SNT3 release does not expose correlated inputs")
@@ -362,12 +390,17 @@ def main():
                     return gx+gy
                 value, sigma = evaluate(library, operation)
                 append(case, library, f"{library} correlated standard uncertainty", value, sigma, reference_sd, draws, unit)
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx, qy = snt(x, sx, unit), snt(y, sy, unit)
                 Quantity.correlate(qx, qy, rho)
                 append_snt_monte_carlo(case, [qx, qy], ["normal", "normal"],
                                        lambda left, right: left + right,
                                        reference_sd, draws, unit)
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                mx, my = metrolopy.gummy.create(
+                    [x, y], u=[sx, sy], correlation_matrix=[[1, rho], [rho, 1]], unit=unit
+                )
+                append_metrolopy_monte_carlo(case, mx + my, reference_sd, draws, unit)
 
         elif case == "rectangular_linear":
             x = float(get(prefix+"x"))
@@ -376,7 +409,7 @@ def main():
             draws = rng.uniform(x-half_width, x+half_width, samples)
             reference_sd = sx
             for library in libraries:
-                if library == "snt" and local_snt and "fast" not in local_snt_tracks:
+                if library == "snt" and "fast" not in snt_tracks:
                     continue
                 def operation(which):
                     if which == "snt": return snt(x, sx, unit)
@@ -386,10 +419,15 @@ def main():
                 model = f"{library} first-order from standard deviation"
                 append(case, library, model, value, sigma, reference_sd, draws, unit,
                        coverage_target=1/math.sqrt(3))
-            if local_snt and "snt" in libraries and "monte_carlo" in local_snt_tracks:
+            if "snt" in libraries and "monte_carlo" in snt_tracks:
                 qx = snt(x, sx, unit)
                 append_snt_monte_carlo(case, [qx], ["uniform"], lambda sampled: sampled,
                                        reference_sd, draws, unit)
+            if metrolopy_monte_carlo and "metrolopy" in libraries and case in metrolopy_mc_cases:
+                metro_input = metrolopy.gummy(
+                    metrolopy.UniformDist(center=x, half_width=half_width), unit=unit
+                )
+                append_metrolopy_monte_carlo(case, metro_input, reference_sd, draws, unit)
 
     frame = pd.DataFrame(rows)
     frame["mc_reference_relative_error"] = abs(frame.monte_carlo_sd-frame.reference_standard_deviation)/frame.reference_standard_deviation

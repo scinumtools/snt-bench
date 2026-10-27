@@ -32,7 +32,7 @@ The default quick method uses two warmups and five samples per format and size, 
 
 ## Reference figure and analysis
 
-The reference figures use SNT3 0.9.11, Python 3.13.15, and the versions in [`config.dip`](config.dip). All 16 format/size combinations passed equality checks. At 10,000 parameters, parser-output medians were 1.52 ms for JSON, 26.71 ms for TOML, 263.03 ms for PyYAML `safe_load`, and 347.07 ms for DIPL. DIPL is already slower at the native parser-output stage, so the extra mapping work cannot account for the overall gap. Quick results are single-process measurements; use repeated pyperf runs before making stable speed claims.
+The reference figures use SNT3 0.9.12, Python 3.13.15, and the versions in [`config.dip`](config.dip). All 16 format/size combinations passed equality checks. At 10,000 parameters, parser-output medians were 1.56 ms for JSON, 27.28 ms for TOML, 266.07 ms for PyYAML `safe_load`, and 141.74 ms for DIPL. The 0.9.12 parser optimization reduces DIPL's parser-only median by about 59% versus the 0.9.11 snapshot; DIPL is now faster than YAML in this run, though remains about 5.2× slower than TOML. Quick results are single-process measurements; use repeated pyperf runs before making stable speed claims.
 
 ### Parser-output-only comparison
 
@@ -42,7 +42,9 @@ This is the single figure shown in the main README. It times each parser through
 
 ### Decode-to-common-mapping comparison
 
-The JSON, YAML, and TOML paths already return the common Python mapping, so their values match the parser-output-only figure. DIPL additionally selects evaluated leaf nodes and creates that mapping. At 10,000 parameters, this step raises DIPL's median from 347.07 ms to 373.43 ms (about 7.6%). It contributes some overhead, but DIPL's parser-output time is already much higher than the other parser times.
+The JSON, YAML, and TOML paths already return the common Python mapping, so their values match the parser-output-only figure. DIPL additionally selects evaluated leaf nodes and creates that mapping. At 10,000 parameters, this step raises DIPL's median from 141.74 ms to 160.55 ms (about 13.3%). It adds measurable conversion work, while parser-only DIPL remains slower than TOML and JSON in this workload.
+
+The SNT3 0.9.12 release includes [DIP parsing optimizations](https://github.com/scinumtools/snt3/commit/5cac2a25910f4e89ec206921d7afde5323c447fc). In the matching 0.9.11-to-0.9.12 quick snapshots, the DIPL parser-only median fell by 85% at 10 parameters, 85% at 100, 81% at 1,000, and 59% at 10,000. This is one same-host quick run across two release versions; it shows the direction and size observed here, not a pyperf-level estimate of the optimization.
 
 ![Decode-to-common-mapping times by parameter count for JSON, YAML, TOML, and DIPL](results/reference-common-mapping.png)
 

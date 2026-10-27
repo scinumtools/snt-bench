@@ -120,9 +120,9 @@ pyunits
 
   packages
     snt
-      version str = "0.9.11"
+      version str = "0.9.12"
         ?descr "Pinned scinumtools3 release used for the reference comparison."
-        ?rationale "Source: https://pypi.org/project/scinumtools3/0.9.11/"
+        ?rationale "Source: https://pypi.org/project/scinumtools3/0.9.12/"
 
       website str = "https://github.com/scinumtools/snt3"
         ?descr "SNT3 source repository and project home."

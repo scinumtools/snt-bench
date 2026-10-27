@@ -25,8 +25,9 @@ the pinned unit-library releases.
 
 ## Uncertainty propagation
 
-Configured unit-uncertainty cases compared with first-order analytical
-propagation and seeded Monte Carlo estimates. The plot compares reported uncertainty with seeded Monte Carlo spread and shows interval coverage.
+Configured unit-uncertainty cases compare first-order propagation with seeded
+Monte Carlo estimates. All three libraries appear in the fast track; SNT3 0.9.12
+and MetroloPy also report Monte Carlo propagation with central 95% intervals.
 
 [Methods, full results, and run instructions](benchmarks/uncertainty-propagation/README.md).
 
@@ -44,7 +45,10 @@ The workload categories are informed by [Goldbaum et al.'s unit-library benchmar
 
 ## Python configuration parsing
 
-Comparison of JSON, YAML, TOML, and DIPL for equivalent nested data. The parser-only figure measures each decoder's native result; the common-mapping figure also converts DIPL's evaluated nodes to a standard Python mapping. At 10,000 parameters, this conversion adds about 7.6% to DIPL's measured time, while DIPL is already slower in parser-only mode. Parser versions appear in the legends.
+Comparison of JSON, YAML, TOML, and DIPL for equivalent nested data. At 10,000
+parameters, DIPL takes 141.7 ms to parse and 160.5 ms to also build a common
+Python mapping. SNT3 0.9.12 reduces DIPL's parser-only median by about 59% versus
+the preceding quick snapshot; TOML and JSON remain faster in this workload.
 
 The method follows the equivalent-structure and equality-check pattern in [Canop's configuration deserializer benchmark](https://github.com/Canop/bench-config-deserializers).
 
@@ -56,7 +60,11 @@ The method follows the equivalent-structure and equality-check pattern in [Canop
 
 ## Typed configuration loading
 
-End-to-end loading of equivalent scientific settings, including typed validation, defaults, derived values, and unit-bearing values. At 1,000 parameters, DIPL takes 70.4 ms, versus 25.9 ms for YAML + Pydantic + Pint, 2.71 ms for TOML + Pydantic + Pint, and 0.196 ms for JSON + Pydantic + Pint. DIPL provides the model behavior natively, but this run shows its runtime cost rather than a speed advantage.
+End-to-end loading of equivalent scientific settings, including typed validation,
+defaults, derived values, and unit-bearing values. At 1,000 parameters, DIPL takes
+8.62 ms, versus 25.5 ms for YAML + Pydantic + Pint, 2.69 ms for TOML + Pydantic
++ Pint, and 0.196 ms for JSON + Pydantic + Pint. In this run DIPL is about 3×
+faster than the YAML stack and slower than TOML and JSON.
 
 [Methods, full results, and run instructions](benchmarks/typed-config/README.md).
 
@@ -64,7 +72,7 @@ End-to-end loading of equivalent scientific settings, including typed validation
 
 ## Schema and configuration validation
 
-Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. The figure uses the pinned benchmark results: the native CLI panel includes all four participants, and the in-process Python API panel compares pinned DIPL and JSON Schema. The two timing panels use different scopes and should be compared separately.
+Feature support and validation timing for DIPL, JSON Schema, CUE, and Pkl, with capabilities linked to primary project documentation. The native CLI panel shows the retained four-participant SNT CLI 0.9.10 snapshot; the in-process panel shows the refreshed DIPL/SNT3 0.9.12 and JSON Schema results. The panels use different scopes and should be compared separately.
 
 [Feature matrix, methods, analysis, and full results](benchmarks/schema-validation/README.md).
 

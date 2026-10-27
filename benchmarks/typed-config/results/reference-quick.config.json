@@ -1,7 +1,7 @@
 {
-  "run_utc": "2026-10-26T20:47:16+00:00",
+  "run_utc": "2026-10-27T00:26:50+00:00",
   "config_path": "benchmarks/typed-config/config.dip",
-  "config_sha256": "4bd401016a367e4540d69e67dd54be88531fc4db02b1b35b6edb29adc872cc95",
+  "config_sha256": "48c8dde0af312c453606019918eb01fd30b9df43fe3fb1fda06710037f4567fa",
   "formats": [
     "json",
     "yaml",
@@ -44,7 +44,7 @@
     "value_divisor": 10.0
   },
   "packages": {
-    "scinumtools3": "0.9.11",
+    "scinumtools3": "0.9.12",
     "pydantic": "2.14.1",
     "pyyaml": "6.0.3",
     "pint": "0.26.2",
